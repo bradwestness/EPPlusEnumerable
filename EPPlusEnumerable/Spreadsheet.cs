@@ -34,15 +34,34 @@ namespace EPPlusEnumerable
         }
 
         /// <summary>
+        /// Creates an Excel spreadsheet with worksheets for each collection of objects and custom names for worksheets.
+        /// </summary>
+        /// <param name="data">A collection of data collections. Each outer collection will be used as a worksheet, while the inner collections will be used as data rows.</param>
+        /// <returns>An Excel spreadsheet as a byte array.</returns>
+        public static byte[] Create(IDictionary<string, IEnumerable<object>> data)
+        {
+            var package = new ExcelPackage();
+
+            foreach (var datum in data)
+            {
+                AddWorksheet(package, datum.Value, datum.Key);
+            }
+
+            AddSpreadsheetLinks(package, data);
+
+            return package.GetAsByteArray();
+        }
+
+        /// <summary>
         /// Creates an Excel spreadsheet with a single worksheet for the supplied data.
         /// </summary>
         /// <param name="data">Each row of the spreadsheet will contain one item from the data collection.</param>
         /// <returns>An Excel spreadsheet as a byte array.</returns>
-        public static byte[] Create(IEnumerable<object> data)
+        public static byte[] Create(IEnumerable<object> data, string wsName = null)
         {
             var package = new ExcelPackage();
 
-            AddWorksheet(package, data);
+            AddWorksheet(package, data, wsName);
             AddSpreadsheetLinks(package, new[] { data });
 
             return package.GetAsByteArray();
@@ -52,7 +71,7 @@ namespace EPPlusEnumerable
 
         #region Private Methods
 
-        private static ExcelWorksheet AddWorksheet(ExcelPackage package, IEnumerable<object> data)
+        private static ExcelWorksheet AddWorksheet(ExcelPackage package, IEnumerable<object> data, string wsName = null)
         {
             if (data == null || !data.Any())
             {
@@ -61,7 +80,7 @@ namespace EPPlusEnumerable
 
             var collectionType = data.First().GetType();
             var properties = collectionType.GetProperties();
-            var worksheetName = GetWorksheetName(collectionType);
+            var worksheetName = wsName ?? GetWorksheetName(collectionType);
             var worksheet = package.Workbook.Worksheets.Add(worksheetName);
             var lastColumn = GetColumnLetter(properties.Count());
 
@@ -94,7 +113,7 @@ namespace EPPlusEnumerable
                             break;
 
                         default:
-                            worksheet.Cells[cell].Value = value.ToString();
+                            worksheet.Cells[cell].Value = FormatPropertyValue(property, value);
                             break;
                     }
                 }
@@ -112,6 +131,11 @@ namespace EPPlusEnumerable
             return worksheet;
         }
 
+        /// <summary>
+        /// Gets the worksheet name from DisplayName attribute.
+        /// </summary>
+        /// <param name="collectionType">Type of the collection.</param>
+        /// <returns></returns>
         private static string GetWorksheetName(Type collectionType)
         {
             var worksheetName = collectionType.Name;
@@ -162,9 +186,53 @@ namespace EPPlusEnumerable
             return propertyName;
         }
 
+        /// <summary>
+        /// Gets the format (if any) from DisplayFormat(DisplayFormatString = "") attribute 
+        /// use it to return formated property value.
+        /// </summary>
+        /// <param name="property">The property infos</param>
+        /// <param name="value">The property value.</param>
+        /// <returns></returns>
+        private static string FormatPropertyValue(PropertyInfo property, object value)
+        {
+            var propertyName = property.Name;
+
+            var displayFormatAttribute = property.GetCustomAttribute<DisplayFormatAttribute>(true);
+            string propertyFormatStr = null;
+            if (displayFormatAttribute != null)
+            {
+                propertyFormatStr = displayFormatAttribute.DataFormatString;
+            }
+
+            return propertyFormatStr != null ? String.Format(propertyFormatStr, value) : value.ToString();
+        }
+
         private static void AddSpreadsheetLinks(ExcelPackage package, IEnumerable<IEnumerable<object>> data)
         {
-            foreach (var collection in data)
+            AddSpreadsheetLinks_Internal(package, data);
+        }
+
+        private static void AddSpreadsheetLinks(ExcelPackage package, IDictionary<string, IEnumerable<object>> data)
+        {
+            AddSpreadsheetLinks_Internal(package, data);
+        }
+
+        private static void AddSpreadsheetLinks_Internal(ExcelPackage package, object data)
+        {
+            string argType;
+            IEnumerable<IEnumerable<object>> enumerableData;
+            if ((data as IDictionary<string, IEnumerable<object>>) != null) // called via the IDictionary<...> surcharge
+            {
+                argType = "Dictionary";
+                enumerableData = (data as IDictionary<string, IEnumerable<object>>).Values.AsEnumerable();
+            }
+            else // called via the IEnumerable<...> surcharge
+            {
+                argType = "Enumerable";
+                enumerableData = (data as IEnumerable<IEnumerable<object>>);
+            }
+
+            foreach (var collection in enumerableData)
             {
                 if (collection == null || !collection.Any())
                 {
@@ -173,7 +241,10 @@ namespace EPPlusEnumerable
 
                 var collectionType = collection.First().GetType();
                 var properties = collectionType.GetProperties();
-                var worksheetName = GetWorksheetName(collectionType);
+                var worksheetName = argType == "Enumerable" ? GetWorksheetName(collectionType)
+                                                            : (data as IDictionary<string, IEnumerable<object>>).Where(i => i.Value == collection)
+                                                                                                                .Select(i => i.Key)
+                                                                                                                .First();
                 var worksheet = package.Workbook.Worksheets[worksheetName];
 
                 if (worksheet == null)
@@ -249,7 +320,7 @@ namespace EPPlusEnumerable
                         // we found a match! this is the link target, 
                         // so add the hyperlink to the worksheet cell
                         // and stop searching for targets for this row
-                        worksheetCell.Hyperlink = new ExcelHyperLink(string.Format("{0}!{1}{2}", linkSheet.Name, linkColumn, linksheetRow), worksheetValue.ToString());
+                        worksheetCell.Hyperlink = new ExcelHyperLink(string.Format("'{0}'!{1}{2}", linkSheet.Name, linkColumn, linksheetRow), worksheetValue.ToString());
                         worksheetCell.Style.Font.UnderLine = true;
                         worksheetCell.Style.Font.Color.SetColor(Color.Blue);
                         break;

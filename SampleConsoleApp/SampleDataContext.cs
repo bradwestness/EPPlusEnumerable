@@ -11,6 +11,8 @@ namespace SampleConsoleApp
 
         public IEnumerable<Order> Orders { get; set; }
 
+        public IEnumerable<Order2> Orders2 { get; set; }
+
         #endregion
 
         #region Constructors
@@ -19,6 +21,7 @@ namespace SampleConsoleApp
         {
             Users = GetUsers();
             Orders = GetOrders();
+            Orders2 = GetOrders2();
         }
 
         #endregion
@@ -155,6 +158,122 @@ namespace SampleConsoleApp
                 new Order{ Number = 10, Item = "Electric Steam Mop", Customer = "Austin Jackson", Price = (decimal)79.99, Date= DateTime.Now.AddDays(-9)},
             };
         }
+
+        private static IEnumerable<Order2> GetOrders2()
+        {
+            return new[] {
+                new Order2{ Number = 1, Item = "Water Filter", Customer = "Jackson Turner", Price = (decimal)13.69, Date= DateTime.Now},
+                new Order2{ Number = 2, Item = "Digital Scale", Customer = "Jackson Turner", Price = (decimal)13.00, Date= DateTime.Now.AddDays(-1) },
+                new Order2{ Number = 3, Item = "Ceramic Heater", Customer = "Jackson Turner", Price = (decimal)24.97, Date= DateTime.Now.AddDays(-2)},
+                new Order2{ Number = 4, Item = "Humidifier", Customer = "Jackson Turner", Price = (decimal)88.79, Date= DateTime.Now.AddDays(-3)},
+                new Order2{ Number = 5, Item = "Coffee Filters", Customer = "Jackson Turner", Price = (decimal)7.79, Date= DateTime.Now.AddDays(-4)},
+                new Order2{ Number = 6, Item = "Crock Pot", Customer = "Jackson Turner", Price = (decimal)23.99, Date= DateTime.Now.AddDays(-5)},
+                new Order2{ Number = 7, Item = "Vacuum Cleaner", Customer = "Jackson Turner", Price = (decimal)79.00, Date= DateTime.Now.AddDays(-6)},
+                new Order2{ Number = 8, Item = "Coffee Pot", Customer = "Jackson Turner", Price = (decimal)24.92, Date= DateTime.Now.AddDays(-7)},
+                new Order2{ Number = 9, Item = "TV Stand", Customer = "Jackson Turner", Price = (decimal)25.77, Date= DateTime.Now.AddDays(-8)},
+                new Order2{ Number = 10, Item = "Electric Steam Mop", Customer = "Jackson Turner", Price = (decimal)79.99, Date= DateTime.Now.AddDays(-9)},
+                         
+                new Order2{ Number = 1, Item = "Water Filter", Customer = "Megan Perry", Price = (decimal)13.69, Date= DateTime.Now},
+                new Order2{ Number = 2, Item = "Digital Scale", Customer = "Megan Perry", Price = (decimal)13.00, Date= DateTime.Now.AddDays(-1) },
+                new Order2{ Number = 3, Item = "Ceramic Heater", Customer = "Megan Perry", Price = (decimal)24.97, Date= DateTime.Now.AddDays(-2)},
+                new Order2{ Number = 4, Item = "Humidifier", Customer = "Megan Perry", Price = (decimal)88.79, Date= DateTime.Now.AddDays(-3)},
+                new Order2{ Number = 5, Item = "Coffee Filters", Customer = "Megan Perry", Price = (decimal)7.79, Date= DateTime.Now.AddDays(-4)},
+                new Order2{ Number = 6, Item = "Crock Pot", Customer = "Megan Perry", Price = (decimal)23.99, Date= DateTime.Now.AddDays(-5)},
+                new Order2{ Number = 7, Item = "Vacuum Cleaner", Customer = "Megan Perry", Price = (decimal)79.00, Date= DateTime.Now.AddDays(-6)},
+                new Order2{ Number = 8, Item = "Coffee Pot", Customer = "Megan Perry", Price = (decimal)24.92, Date= DateTime.Now.AddDays(-7)},
+                new Order2{ Number = 9, Item = "TV Stand", Customer = "Megan Perry", Price = (decimal)25.77, Date= DateTime.Now.AddDays(-8)},
+                new Order2{ Number = 10, Item = "Electric Steam Mop", Customer = "Megan Perry", Price = (decimal)79.99, Date= DateTime.Now.AddDays(-9)},
+                         
+                new Order2{ Number = 1, Item = "Water Filter", Customer = "Ryan Harris", Price = (decimal)13.69, Date= DateTime.Now},
+                new Order2{ Number = 2, Item = "Digital Scale", Customer = "Ryan Harris", Price = (decimal)13.00, Date= DateTime.Now.AddDays(-1) },
+                new Order2{ Number = 3, Item = "Ceramic Heater", Customer = "Ryan Harris", Price = (decimal)24.97, Date= DateTime.Now.AddDays(-2)},
+                new Order2{ Number = 4, Item = "Humidifier", Customer = "Ryan Harris", Price = (decimal)88.79, Date= DateTime.Now.AddDays(-3)},
+                new Order2{ Number = 5, Item = "Coffee Filters", Customer = "Ryan Harris", Price = (decimal)7.79, Date= DateTime.Now.AddDays(-4)},
+                new Order2{ Number = 6, Item = "Crock Pot", Customer = "Ryan Harris", Price = (decimal)23.99, Date= DateTime.Now.AddDays(-5)},
+                new Order2{ Number = 7, Item = "Vacuum Cleaner", Customer = "Ryan Harris", Price = (decimal)79.00, Date= DateTime.Now.AddDays(-6)},
+                new Order2{ Number = 8, Item = "Coffee Pot", Customer = "Ryan Harris", Price = (decimal)24.92, Date= DateTime.Now.AddDays(-7)},
+                new Order2{ Number = 9, Item = "TV Stand", Customer = "Ryan Harris", Price = (decimal)25.77, Date= DateTime.Now.AddDays(-8)},
+                new Order2{ Number = 10, Item = "Electric Steam Mop", Customer = "Ryan Harris", Price = (decimal)79.99, Date= DateTime.Now.AddDays(-9)},
+                         
+                new Order2{ Number = 1, Item = "Water Filter", Customer = "Mason Edwards", Price = (decimal)13.69, Date= DateTime.Now},
+                new Order2{ Number = 2, Item = "Digital Scale", Customer = "Mason Edwards", Price = (decimal)13.00, Date= DateTime.Now.AddDays(-1) },
+                new Order2{ Number = 3, Item = "Ceramic Heater", Customer = "Mason Edwards", Price = (decimal)24.97, Date= DateTime.Now.AddDays(-2)},
+                new Order2{ Number = 4, Item = "Humidifier", Customer = "Mason Edwards", Price = (decimal)88.79, Date= DateTime.Now.AddDays(-3)},
+                new Order2{ Number = 5, Item = "Coffee Filters", Customer = "Mason Edwards", Price = (decimal)7.79, Date= DateTime.Now.AddDays(-4)},
+                new Order2{ Number = 6, Item = "Crock Pot", Customer = "Mason Edwards", Price = (decimal)23.99, Date= DateTime.Now.AddDays(-5)},
+                new Order2{ Number = 7, Item = "Vacuum Cleaner", Customer = "Mason Edwards", Price = (decimal)79.00, Date= DateTime.Now.AddDays(-6)},
+                new Order2{ Number = 8, Item = "Coffee Pot", Customer = "Mason Edwards", Price = (decimal)24.92, Date= DateTime.Now.AddDays(-7)},
+                new Order2{ Number = 9, Item = "TV Stand", Customer = "Mason Edwards", Price = (decimal)25.77, Date= DateTime.Now.AddDays(-8)},
+                new Order2{ Number = 10, Item = "Electric Steam Mop", Customer = "Mason Edwards", Price = (decimal)79.99, Date= DateTime.Now.AddDays(-9)},
+                         
+                new Order2{ Number = 1, Item = "Water Filter", Customer = "Noah Jenkins", Price = (decimal)13.69, Date= DateTime.Now},
+                new Order2{ Number = 2, Item = "Digital Scale", Customer = "Noah Jenkins", Price = (decimal)13.00, Date= DateTime.Now.AddDays(-1) },
+                new Order2{ Number = 3, Item = "Ceramic Heater", Customer = "Noah Jenkins", Price = (decimal)24.97, Date= DateTime.Now.AddDays(-2)},
+                new Order2{ Number = 4, Item = "Humidifier", Customer = "Noah Jenkins", Price = (decimal)88.79, Date= DateTime.Now.AddDays(-3)},
+                new Order2{ Number = 5, Item = "Coffee Filters", Customer = "Noah Jenkins", Price = (decimal)7.79, Date= DateTime.Now.AddDays(-4)},
+                new Order2{ Number = 6, Item = "Crock Pot", Customer = "Noah Jenkins", Price = (decimal)23.99, Date= DateTime.Now.AddDays(-5)},
+                new Order2{ Number = 7, Item = "Vacuum Cleaner", Customer = "Noah Jenkins", Price = (decimal)79.00, Date= DateTime.Now.AddDays(-6)},
+                new Order2{ Number = 8, Item = "Coffee Pot", Customer = "Noah Jenkins", Price = (decimal)24.92, Date= DateTime.Now.AddDays(-7)},
+                new Order2{ Number = 9, Item = "TV Stand", Customer = "Noah Jenkins", Price = (decimal)25.77, Date= DateTime.Now.AddDays(-8)},
+                new Order2{ Number = 10, Item = "Electric Steam Mop", Customer = "Noah Jenkins", Price = (decimal)79.99, Date= DateTime.Now.AddDays(-9)},
+                         
+                new Order2{ Number = 1, Item = "Water Filter", Customer = "Stephanie Hayes", Price = (decimal)13.69, Date= DateTime.Now},
+                new Order2{ Number = 2, Item = "Digital Scale", Customer = "Stephanie Hayes", Price = (decimal)13.00, Date= DateTime.Now.AddDays(-1) },
+                new Order2{ Number = 3, Item = "Ceramic Heater", Customer = "Stephanie Hayes", Price = (decimal)24.97, Date= DateTime.Now.AddDays(-2)},
+                new Order2{ Number = 4, Item = "Humidifier", Customer = "Stephanie Hayes", Price = (decimal)88.79, Date= DateTime.Now.AddDays(-3)},
+                new Order2{ Number = 5, Item = "Coffee Filters", Customer = "Stephanie Hayes", Price = (decimal)7.79, Date= DateTime.Now.AddDays(-4)},
+                new Order2{ Number = 6, Item = "Crock Pot", Customer = "Stephanie Hayes", Price = (decimal)23.99, Date= DateTime.Now.AddDays(-5)},
+                new Order2{ Number = 7, Item = "Vacuum Cleaner", Customer = "Stephanie Hayes", Price = (decimal)79.00, Date= DateTime.Now.AddDays(-6)},
+                new Order2{ Number = 8, Item = "Coffee Pot", Customer = "Stephanie Hayes", Price = (decimal)24.92, Date= DateTime.Now.AddDays(-7)},
+                new Order2{ Number = 9, Item = "TV Stand", Customer = "Stephanie Hayes", Price = (decimal)25.77, Date= DateTime.Now.AddDays(-8)},
+                new Order2{ Number = 10, Item = "Electric Steam Mop", Customer = "Stephanie Hayes", Price = (decimal)79.99, Date= DateTime.Now.AddDays(-9)},
+                         
+                new Order2{ Number = 1, Item = "Water Filter", Customer = "Caleb Scott", Price = (decimal)13.69, Date= DateTime.Now},
+                new Order2{ Number = 2, Item = "Digital Scale", Customer = "Caleb Scott", Price = (decimal)13.00, Date= DateTime.Now.AddDays(-1) },
+                new Order2{ Number = 3, Item = "Ceramic Heater", Customer = "Caleb Scott", Price = (decimal)24.97, Date= DateTime.Now.AddDays(-2)},
+                new Order2{ Number = 4, Item = "Humidifier", Customer = "Caleb Scott", Price = (decimal)88.79, Date= DateTime.Now.AddDays(-3)},
+                new Order2{ Number = 5, Item = "Coffee Filters", Customer = "Caleb Scott", Price = (decimal)7.79, Date= DateTime.Now.AddDays(-4)},
+                new Order2{ Number = 6, Item = "Crock Pot", Customer = "Caleb Scott", Price = (decimal)23.99, Date= DateTime.Now.AddDays(-5)},
+                new Order2{ Number = 7, Item = "Vacuum Cleaner", Customer = "Caleb Scott", Price = (decimal)79.00, Date= DateTime.Now.AddDays(-6)},
+                new Order2{ Number = 8, Item = "Coffee Pot", Customer = "Caleb Scott", Price = (decimal)24.92, Date= DateTime.Now.AddDays(-7)},
+                new Order2{ Number = 9, Item = "TV Stand", Customer = "Caleb Scott", Price = (decimal)25.77, Date= DateTime.Now.AddDays(-8)},
+                new Order2{ Number = 10, Item = "Electric Steam Mop", Customer = "Caleb Scott", Price = (decimal)79.99, Date= DateTime.Now.AddDays(-9)},
+                         
+                new Order2{ Number = 1, Item = "Water Filter", Customer = "Morgan Wood", Price = (decimal)13.69, Date= DateTime.Now},
+                new Order2{ Number = 2, Item = "Digital Scale", Customer = "Morgan Wood", Price = (decimal)13.00, Date= DateTime.Now.AddDays(-1) },
+                new Order2{ Number = 3, Item = "Ceramic Heater", Customer = "Morgan Wood", Price = (decimal)24.97, Date= DateTime.Now.AddDays(-2)},
+                new Order2{ Number = 4, Item = "Humidifier", Customer = "Morgan Wood", Price = (decimal)88.79, Date= DateTime.Now.AddDays(-3)},
+                new Order2{ Number = 5, Item = "Coffee Filters", Customer = "Morgan Wood", Price = (decimal)7.79, Date= DateTime.Now.AddDays(-4)},
+                new Order2{ Number = 6, Item = "Crock Pot", Customer = "Morgan Wood", Price = (decimal)23.99, Date= DateTime.Now.AddDays(-5)},
+                new Order2{ Number = 7, Item = "Vacuum Cleaner", Customer = "Morgan Wood", Price = (decimal)79.00, Date= DateTime.Now.AddDays(-6)},
+                new Order2{ Number = 8, Item = "Coffee Pot", Customer = "Morgan Wood", Price = (decimal)24.92, Date= DateTime.Now.AddDays(-7)},
+                new Order2{ Number = 9, Item = "TV Stand", Customer = "Morgan Wood", Price = (decimal)25.77, Date= DateTime.Now.AddDays(-8)},
+                new Order2{ Number = 10, Item = "Electric Steam Mop", Customer = "Morgan Wood", Price = (decimal)79.99, Date= DateTime.Now.AddDays(-9)},
+                         
+                new Order2{ Number = 1, Item = "Water Filter", Customer = "James Parker", Price = (decimal)13.69, Date= DateTime.Now},
+                new Order2{ Number = 2, Item = "Digital Scale", Customer = "James Parker", Price = (decimal)13.00, Date= DateTime.Now.AddDays(-1) },
+                new Order2{ Number = 3, Item = "Ceramic Heater", Customer = "James Parker", Price = (decimal)24.97, Date= DateTime.Now.AddDays(-2)},
+                new Order2{ Number = 4, Item = "Humidifier", Customer = "James Parker", Price = (decimal)88.79, Date= DateTime.Now.AddDays(-3)},
+                new Order2{ Number = 5, Item = "Coffee Filters", Customer = "James Parker", Price = (decimal)7.79, Date= DateTime.Now.AddDays(-4)},
+                new Order2{ Number = 6, Item = "Crock Pot", Customer = "James Parker", Price = (decimal)23.99, Date= DateTime.Now.AddDays(-5)},
+                new Order2{ Number = 7, Item = "Vacuum Cleaner", Customer = "James Parker", Price = (decimal)79.00, Date= DateTime.Now.AddDays(-6)},
+                new Order2{ Number = 8, Item = "Coffee Pot", Customer = "James Parker", Price = (decimal)24.92, Date= DateTime.Now.AddDays(-7)},
+                new Order2{ Number = 9, Item = "TV Stand", Customer = "James Parker", Price = (decimal)25.77, Date= DateTime.Now.AddDays(-8)},
+                new Order2{ Number = 10, Item = "Electric Steam Mop", Customer = "James Parker", Price = (decimal)79.99, Date= DateTime.Now.AddDays(-9)},
+                         
+                new Order2{ Number = 1, Item = "Water Filter", Customer = "Austin Jackson", Price = (decimal)13.69, Date= DateTime.Now},
+                new Order2{ Number = 2, Item = "Digital Scale", Customer = "Austin Jackson", Price = (decimal)13.00, Date= DateTime.Now.AddDays(-1) },
+                new Order2{ Number = 3, Item = "Ceramic Heater", Customer = "Austin Jackson", Price = (decimal)24.97, Date= DateTime.Now.AddDays(-2)},
+                new Order2{ Number = 4, Item = "Humidifier", Customer = "Austin Jackson", Price = (decimal)88.79, Date= DateTime.Now.AddDays(-3)},
+                new Order2{ Number = 5, Item = "Coffee Filters", Customer = "Austin Jackson", Price = (decimal)7.79, Date= DateTime.Now.AddDays(-4)},
+                new Order2{ Number = 6, Item = "Crock Pot", Customer = "Austin Jackson", Price = (decimal)23.99, Date= DateTime.Now.AddDays(-5)},
+                new Order2{ Number = 7, Item = "Vacuum Cleaner", Customer = "Austin Jackson", Price = (decimal)79.00, Date= DateTime.Now.AddDays(-6)},
+                new Order2{ Number = 8, Item = "Coffee Pot", Customer = "Austin Jackson", Price = (decimal)24.92, Date= DateTime.Now.AddDays(-7)},
+                new Order2{ Number = 9, Item = "TV Stand", Customer = "Austin Jackson", Price = (decimal)25.77, Date= DateTime.Now.AddDays(-8)},
+                new Order2{ Number = 10, Item = "Electric Steam Mop", Customer = "Austin Jackson", Price = (decimal)79.99, Date= DateTime.Now.AddDays(-9)},
+            };
+        }
+
 
         #endregion
 
