@@ -182,7 +182,9 @@ namespace EPPlusEnumerable
                             break;
 
                         default:
-                            worksheet.Cells[cell].Value = GetPropertyValue(property, item);
+                            var propertyValue = GetPropertyValue(property, item);
+                            worksheet.Cells[cell].Value = propertyValue;
+                            if(propertyValue is DateTime){worksheet.Cells[cell].Style.Numberformat.Format = System.Globalization.CultureInfo.CurrentCulture.DateTimeFormat.ShortDatePattern;}
                             break;
                     }
                 }
@@ -263,29 +265,49 @@ namespace EPPlusEnumerable
             return propertyName;
         }
 
-        private static string GetPropertyValue(PropertyInfo property, object item)
+        private static object GetPropertyValue(PropertyInfo property, object item)
         {
             var value = property.GetValue(item);
-            string valueString = string.Empty;
+            object returnValue = string.Empty;
 
             var displayFormatAttribute = property.GetCustomAttribute<DisplayFormatAttribute>(true);
             if (displayFormatAttribute != null)
             {
                 if (value == null && !string.IsNullOrWhiteSpace(displayFormatAttribute.NullDisplayText))
                 {
-                    valueString = displayFormatAttribute.NullDisplayText;
+                    returnValue = displayFormatAttribute.NullDisplayText;
                 }
                 else if (value != null)
                 {
-                    valueString = string.Format(displayFormatAttribute.DataFormatString, value);
+                    returnValue = string.Format(displayFormatAttribute.DataFormatString, value);
                 }
             }
             else if (value != null)
             {
-                valueString = value.ToString();
+                //If it's a simple type, just pass it along. Otherwise, send back the string representation
+                switch(Type.GetTypeCode(value.GetType()))
+                {
+                    case TypeCode.Boolean:
+                    case TypeCode.Int16:
+                    case TypeCode.UInt16:
+                    case TypeCode.Int32:
+                    case TypeCode.UInt32:
+                    case TypeCode.Int64:
+                    case TypeCode.UInt64:
+                    case TypeCode.Single:
+                    case TypeCode.Double:
+                    case TypeCode.Decimal:
+                    case TypeCode.DateTime:
+                    case TypeCode.String:
+                    returnValue = value;
+                        break;
+                    default:
+                        returnValue = value.ToString();
+                        break;
+                }
             }
 
-            return valueString;
+            return returnValue;
         }
 
         private static void AddSpreadsheetLinks(ExcelPackage package, IEnumerable<IEnumerable<object>> data)
