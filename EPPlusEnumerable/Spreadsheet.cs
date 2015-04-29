@@ -42,6 +42,25 @@ namespace EPPlusEnumerable
         }
 
         /// <summary>
+        /// Creates an Excel spreadsheet with worksheets for each collection of objects using custom names for the worksheets.
+        /// </summary>
+        /// <param name="data">A collection of data collections. Each outer collection will be used as a worksheet using the IDictionary key as the sheet name, while the inner collections will be used as data rows.</param>
+        /// <returns>An Excel spreadsheet as a byte array.</returns>
+        public static byte[] Create(IDictionary<string,IEnumerable<object>> data)
+        {
+            var package = new ExcelPackage();
+
+            foreach(var collection in data)
+            {
+                AddWorksheet(package, collection.Value, collection.Key);
+            }
+
+            AddSpreadsheetLinks(package, data.Values);
+
+            return package.GetAsByteArray();
+        }
+
+        /// <summary>
         /// Creates an Excel spreadsheet with worksheets for each collection of objects.
         /// </summary>
         /// <param name="data">A collection of data collections. Each outer collection will be used as a worksheet, while the inner collections will be used as data rows.</param>
@@ -61,15 +80,35 @@ namespace EPPlusEnumerable
         }
 
         /// <summary>
-        /// Creates an Excel spreadsheet with a single worksheet for the supplied data.
+        /// Creates an Excel spreadsheet with worksheets for each collection of objects.
         /// </summary>
-        /// <param name="data">Each row of the spreadsheet will contain one item from the data collection.</param>
-        /// <returns>An Excel spreadsheet as a byte array.</returns>
-        public static byte[] Create(IEnumerable<object> data)
+        /// <param name="data">A collection of data collections. Each outer collection will be used as a worksheet using the IDictionary key as the sheet name, while the inner collections will be used as data rows.</param>
+        /// <returns>A populated ExcelPackage object.</returns>
+        public static ExcelPackage CreatePackage(IDictionary<string,IEnumerable<object>> data)
         {
             var package = new ExcelPackage();
 
-            AddWorksheet(package, data);
+            foreach(var collection in data)
+            {
+                AddWorksheet(package, collection.Value, collection.Key);
+            }
+
+            AddSpreadsheetLinks(package, data.Values);
+
+            return package;
+        }
+
+        /// <summary>
+        /// Creates an Excel spreadsheet with a single worksheet for the supplied data.
+        /// </summary>
+        /// <param name="data">Each row of the spreadsheet will contain one item from the data collection.</param>
+        /// <param name="worksheetName">The worksheet name to use. If omitted it will use the default naming conventions.</param>
+        /// <returns>An Excel spreadsheet as a byte array.</returns>
+        public static byte[] Create(IEnumerable<object> data, string worksheetName = null)
+        {
+            var package = new ExcelPackage();
+
+            AddWorksheet(package, data, worksheetName);
             AddSpreadsheetLinks(package, new[] { data });
 
             return package.GetAsByteArray();
@@ -79,12 +118,13 @@ namespace EPPlusEnumerable
         /// Creates an Excel spreadsheet with a single worksheet for the supplied data.
         /// </summary>
         /// <param name="data">Each row of the spreadsheet will contain one item from the data collection.</param>
+        /// <param name="worksheetName">The worksheet name to use. If omitted it will use the default naming conventions.</param>
         /// <returns>A populated ExcelPackage object.</returns>
-        public static ExcelPackage CreatePackage(IEnumerable<object> data)
+        public static ExcelPackage CreatePackage(IEnumerable<object> data, string worksheetName = null)
         {
             var package = new ExcelPackage();
 
-            AddWorksheet(package, data);
+            AddWorksheet(package, data, worksheetName);
             AddSpreadsheetLinks(package, new[] { data });
 
             return package;
@@ -94,7 +134,7 @@ namespace EPPlusEnumerable
 
         #region Private Methods
 
-        private static ExcelWorksheet AddWorksheet(ExcelPackage package, IEnumerable<object> data)
+        private static ExcelWorksheet AddWorksheet(ExcelPackage package, IEnumerable<object> data, string worksheetName = null)
         {
             if (data == null || !data.Any())
             {
@@ -103,9 +143,14 @@ namespace EPPlusEnumerable
 
             var collectionType = data.First().GetType();
             var properties = collectionType.GetProperties();
-            var worksheetName = GetWorksheetName(collectionType);
             var worksheet = package.Workbook.Worksheets.Add(worksheetName);
             var lastColumn = GetColumnLetter(properties.Count());
+
+            //Get worksheet name if it has not been specified already
+            if (string.IsNullOrWhiteSpace(worksheetName))
+            {
+                worksheetName = GetWorksheetName(collectionType);
+            }
 
             // add column headings
             for (var i = 1; i <= properties.Count(); i++)
@@ -137,7 +182,9 @@ namespace EPPlusEnumerable
                             break;
 
                         default:
-                            worksheet.Cells[cell].Value = GetPropertyValue(property, item);
+                            var propertyValue = GetPropertyValue(property, item);
+                            worksheet.Cells[cell].Value = propertyValue;
+                            if(propertyValue is DateTime){worksheet.Cells[cell].Style.Numberformat.Format = System.Globalization.CultureInfo.CurrentCulture.DateTimeFormat.ShortDatePattern;}
                             break;
                     }
                 }
@@ -218,29 +265,49 @@ namespace EPPlusEnumerable
             return propertyName;
         }
 
-        private static string GetPropertyValue(PropertyInfo property, object item)
+        private static object GetPropertyValue(PropertyInfo property, object item)
         {
             var value = property.GetValue(item);
-            string valueString = string.Empty;
+            object returnValue = string.Empty;
 
             var displayFormatAttribute = property.GetCustomAttribute<DisplayFormatAttribute>(true);
             if (displayFormatAttribute != null)
             {
                 if (value == null && !string.IsNullOrWhiteSpace(displayFormatAttribute.NullDisplayText))
                 {
-                    valueString = displayFormatAttribute.NullDisplayText;
+                    returnValue = displayFormatAttribute.NullDisplayText;
                 }
                 else if (value != null)
                 {
-                    valueString = string.Format(displayFormatAttribute.DataFormatString, value);
+                    returnValue = string.Format(displayFormatAttribute.DataFormatString, value);
                 }
             }
             else if (value != null)
             {
-                valueString = value.ToString();
+                //If it's a simple type, just pass it along. Otherwise, send back the string representation
+                switch(Type.GetTypeCode(value.GetType()))
+                {
+                    case TypeCode.Boolean:
+                    case TypeCode.Int16:
+                    case TypeCode.UInt16:
+                    case TypeCode.Int32:
+                    case TypeCode.UInt32:
+                    case TypeCode.Int64:
+                    case TypeCode.UInt64:
+                    case TypeCode.Single:
+                    case TypeCode.Double:
+                    case TypeCode.Decimal:
+                    case TypeCode.DateTime:
+                    case TypeCode.String:
+                    returnValue = value;
+                        break;
+                    default:
+                        returnValue = value.ToString();
+                        break;
+                }
             }
 
-            return valueString;
+            return returnValue;
         }
 
         private static void AddSpreadsheetLinks(ExcelPackage package, IEnumerable<IEnumerable<object>> data)
