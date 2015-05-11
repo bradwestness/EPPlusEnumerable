@@ -16,7 +16,7 @@ namespace EPPlusEnumerable
 
         private static readonly char[] _letters = "ABCDEFGHIJKLMNOPQRSTUVWXYZ".ToArray();
 
-        private const TableStyles DefaultTableStyle = TableStyles.Medium16;        
+        private const TableStyles DefaultTableStyle = TableStyles.Medium16;
 
         #endregion
 
@@ -29,16 +29,17 @@ namespace EPPlusEnumerable
         /// <returns>An Excel spreadsheet as a byte array.</returns>
         public static byte[] Create(IEnumerable<IEnumerable<object>> data)
         {
-            var package = new ExcelPackage();
-
-            foreach (var collection in data)
+            using (var package = new ExcelPackage())
             {
-                AddWorksheet(package, collection);
+                foreach (var collection in data)
+                {
+                    AddWorksheet(package, collection);
+                }
+
+                AddSpreadsheetLinks(package, data);
+
+                return package.GetAsByteArray();
             }
-
-            AddSpreadsheetLinks(package, data);
-
-            return package.GetAsByteArray();
         }
 
         /// <summary>
@@ -48,16 +49,17 @@ namespace EPPlusEnumerable
         /// <returns>A populated ExcelPackage object.</returns>
         public static ExcelPackage CreatePackage(IEnumerable<IEnumerable<object>> data)
         {
-            var package = new ExcelPackage();
-
-            foreach (var collection in data)
+            using (var package = new ExcelPackage())
             {
-                AddWorksheet(package, collection);
+                foreach (var collection in data)
+                {
+                    AddWorksheet(package, collection);
+                }
+
+                AddSpreadsheetLinks(package, data);
+
+                return package;
             }
-
-            AddSpreadsheetLinks(package, data);
-
-            return package;
         }
 
         /// <summary>
@@ -67,12 +69,13 @@ namespace EPPlusEnumerable
         /// <returns>An Excel spreadsheet as a byte array.</returns>
         public static byte[] Create(IEnumerable<object> data)
         {
-            var package = new ExcelPackage();
+            using (var package = new ExcelPackage())
+            {
+                AddWorksheet(package, data);
+                AddSpreadsheetLinks(package, new[] { data });
 
-            AddWorksheet(package, data);
-            AddSpreadsheetLinks(package, new[] { data });
-
-            return package.GetAsByteArray();
+                return package.GetAsByteArray();
+            }
         }
 
         /// <summary>
@@ -82,12 +85,13 @@ namespace EPPlusEnumerable
         /// <returns>A populated ExcelPackage object.</returns>
         public static ExcelPackage CreatePackage(IEnumerable<object> data)
         {
-            var package = new ExcelPackage();
+            using (var package = new ExcelPackage())
+            {
+                AddWorksheet(package, data);
+                AddSpreadsheetLinks(package, new[] { data });
 
-            AddWorksheet(package, data);
-            AddSpreadsheetLinks(package, new[] { data });
-
-            return package;
+                return package;
+            }
         }
 
         #endregion
@@ -105,9 +109,12 @@ namespace EPPlusEnumerable
             var firstRow = data.First();
             var collectionType = firstRow.GetType();
             var properties = collectionType.GetProperties();
+            //remove unnecessary properties
+            properties = properties.Where(x => x.GetCustomAttribute<SpreadsheetColumnAttribute>() == null || x.GetCustomAttribute<SpreadsheetColumnAttribute>().ExcludeFromOutput == false).ToArray();
             var worksheetName = GetWorksheetName(firstRow, collectionType, out skipProperty);
             var worksheet = package.Workbook.Worksheets.Add(worksheetName);
             var col = 0;
+
 
             // add column headings
             for (var i = 0; i < properties.Count(); i++)
