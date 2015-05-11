@@ -49,6 +49,7 @@
   <ItemGroup>
     <Compile Include="Spreadsheet.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
+    <Compile Include="SpreadsheetColumnAttribute.cs" />
     <Compile Include="SpreadsheetTabNameAttribute.cs" />
     <Compile Include="SpreadsheetTableStyleAttribute.cs" />
     <Compile Include="SpreadsheetLinkAttribute.cs" />
