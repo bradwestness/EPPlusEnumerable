@@ -10,6 +10,10 @@ using System.Reflection;
 
 namespace EPPlusEnumerable
 {
+    using System.Collections.Concurrent;
+    using System.Data;
+    using System.Threading.Tasks;
+
     public static class Spreadsheet
     {
         #region Static Fields
@@ -30,13 +34,14 @@ namespace EPPlusEnumerable
         public static byte[] Create(IEnumerable<IEnumerable<object>> data)
         {
             var package = new ExcelPackage();
+            var enumeratedData = data.ToList();
 
-            foreach (var collection in data)
+            foreach (var collection in enumeratedData)
             {
-                AddWorksheet(package, collection);
+                AddWorksheet(package, collection.ToList());
             }
 
-            AddSpreadsheetLinks(package, data);
+            AddSpreadsheetLinks(package, enumeratedData);
 
             return package.GetAsByteArray();
         }
@@ -49,13 +54,14 @@ namespace EPPlusEnumerable
         public static ExcelPackage CreatePackage(IEnumerable<IEnumerable<object>> data)
         {
             var package = new ExcelPackage();
+            var enumeratedData = data.ToList();
 
-            foreach (var collection in data)
+            foreach (var collection in enumeratedData)
             {
-                AddWorksheet(package, collection);
+                AddWorksheet(package, collection.ToList());
             }
 
-            AddSpreadsheetLinks(package, data);
+            AddSpreadsheetLinks(package, enumeratedData);
 
             return package;
         }
@@ -68,9 +74,10 @@ namespace EPPlusEnumerable
         public static byte[] Create(IEnumerable<object> data)
         {
             var package = new ExcelPackage();
+            var enumeratedData = data.ToList();
 
-            AddWorksheet(package, data);
-            AddSpreadsheetLinks(package, new[] { data });
+            AddWorksheet(package, enumeratedData);
+            AddSpreadsheetLinks(package, new[] { enumeratedData });
 
             return package.GetAsByteArray();
         }
@@ -83,9 +90,10 @@ namespace EPPlusEnumerable
         public static ExcelPackage CreatePackage(IEnumerable<object> data)
         {
             var package = new ExcelPackage();
+            var enumeratedData = data.ToList();
 
-            AddWorksheet(package, data);
-            AddSpreadsheetLinks(package, new[] { data });
+            AddWorksheet(package, enumeratedData);
+            AddSpreadsheetLinks(package, new[] { enumeratedData });
 
             return package;
         }
@@ -94,7 +102,7 @@ namespace EPPlusEnumerable
 
         #region Private Methods
 
-        private static ExcelWorksheet AddWorksheet(ExcelPackage package, IEnumerable<object> data)
+        private static ExcelWorksheet AddWorksheet(ExcelPackage package, List<object> data)
         {
             if (data == null || !data.Any())
             {
@@ -109,6 +117,10 @@ namespace EPPlusEnumerable
             var worksheet = package.Workbook.Worksheets.Add(worksheetName);
             var col = 0;
 
+            var visibleProperties = new List<PropertyInfo>();
+            var dataTable = new DataTable();
+
+
             // add column headings
             for (var i = 0; i < properties.Count(); i++)
             {
@@ -120,32 +132,41 @@ namespace EPPlusEnumerable
                     continue;
                 }
 
+                dataTable.Columns.Add(propertyName);
+                visibleProperties.Add(property);
+
                 col += 1;
                 worksheet.Cells[string.Format("{0}1", GetColumnLetter(col))].Value = propertyName;
             }
 
-            // add rows (starting with two, since Excel is 1-based and we added a row of column headings)
-            for (var row = 2; row < data.Count() + 2; row++)
-            {
-                var item = data.ElementAt(row - 2);
-                col = 0;
+            var dataRows = new ConcurrentDictionary<long, List<object>>(); 
 
-                for (var i = 0; i < properties.Count(); i++)
+            Parallel.ForEach(
+                data,
+                (item, pls, index) =>
                 {
-                    var property = properties.ElementAt(i);
+                    List<object> dataRow = new List<object>();
 
-                    if (skipProperty != null && property.Name.Equals(skipProperty))
+                    foreach (var visibleProperty in visibleProperties)
                     {
-                        // this property has a SpreadsheetTabNameAttribute
-                        // with ExcludeFromOutput set to true
-                        continue;
+                        object propertyValue = GetPropertyValue(visibleProperty, item);
+
+                        dataRow.Add(propertyValue);
                     }
 
-                    col += 1;
-                    var cell = string.Format("{0}{1}", GetColumnLetter(col), row);
-                    worksheet.Cells[cell].Value = GetPropertyValue(property, item);
-                }
+                    dataRows.GetOrAdd(index, dataRow);
+                });
+
+
+            // add rows to data table
+            for (int i = 0; i < data.Count; i++)
+            {
+                dataTable.Rows.Add(dataRows[i].ToArray());
             }
+
+            // use EPP LoadFromDataTable method in second row
+            worksheet.Cells["A2"].LoadFromDataTable(dataTable, false);
+
 
             // set table formatting
             using (var range = worksheet.Cells[string.Format("A1:{0}{1}", GetColumnLetter(col), data.Count() + 1)])
@@ -298,13 +319,15 @@ namespace EPPlusEnumerable
         {
             foreach (var collection in data)
             {
-                if (collection == null || !collection.Any())
+                var enumeratedCollection = collection.ToList();
+
+                if (!enumeratedCollection.Any())
                 {
                     continue;
                 }
 
                 string skipProperty = null;
-                var firstRow = collection.First();
+                var firstRow = enumeratedCollection.First();
                 var collectionType = firstRow.GetType();
                 var properties = collectionType.GetProperties();
                 var worksheetName = GetWorksheetName(firstRow, collectionType, out skipProperty);
