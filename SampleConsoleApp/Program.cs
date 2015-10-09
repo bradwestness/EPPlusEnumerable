@@ -41,6 +41,7 @@ namespace SampleConsoleApp
 
         public string Country { get; set; }
 
+        [SpreadsheetExcludeFromOutput]
         public string Zip { get; set; }
     }
 
@@ -59,5 +60,8 @@ namespace SampleConsoleApp
 
         [SpreadsheetTabName(FormatString = "{0:MMMM yyyy}")]
         public DateTime Date { get; set; }
+
+        [SpreadsheetExcludeFromOutput]
+        public Guid GarbageData { get; set; }
     }
 }

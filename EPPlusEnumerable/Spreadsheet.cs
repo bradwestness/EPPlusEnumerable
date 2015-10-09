@@ -86,7 +86,7 @@
         /// <summary>
         ///     Adds a sinlge worksheet for the supplied data to the provided excel package.
         /// </summary>
-        /// <param name="package">Existing ExcelPackage object.</param>
+        /// <param name="package">Existing ExcelPackage object to operate on.</param>
         /// <param name="data">Each row of the added worksheet will contain one item from the data collection.</param>
         public static void AddData(ref ExcelPackage package, IEnumerable<object> data)
         {
@@ -97,12 +97,11 @@
         }
 
         /// <summary>
-        ///     Adds data to an Excel spreadsheet ExcelPackage with worksheets for each collection of objects.
+        /// Adds data to an Excel spreadsheet ExcelPackage with worksheets for each collection of objects.
         /// </summary>
-        /// <param name="data">
-        ///     A collection of data collections. Each outer collection will be used as a worksheet, while the inner
-        ///     collections will be used as data rows.
-        /// </param>
+        /// <param name="package">Existing ExcelPackage object to operate on.</param>
+        /// <param name="data">A collection of data collections. Each outer collection will be used as a worksheet, while the inner
+        /// collections will be used as data rows.</param>
         /// <returns>A populated ExcelPackage object.</returns>
         public static void AddData(ref ExcelPackage package, IEnumerable<IEnumerable<object>> data)
         {
@@ -137,13 +136,14 @@
             ExcelWorksheet worksheet = package.Workbook.Worksheets.Add(worksheetName);
             var col = 0;
 
+            IEnumerable<string> skippedProperties = Spreadsheet.GetSkippedPropertyNames(collectionType);
+            
             // add column headings
             for (var i = 0; i < properties.Count(); i++)
-            {
-                PropertyInfo property = properties[i];
+            {                PropertyInfo property = properties[i];
                 var propertyName = Spreadsheet.GetPropertyName(property);
 
-                if (skipProperty != null && property.Name.Equals(skipProperty))
+                if (skippedProperties.Contains(property.Name))
                 {
                     continue;
                 }
@@ -162,7 +162,7 @@
                 {
                     PropertyInfo property = properties.ElementAt(i);
 
-                    if (skipProperty != null && property.Name.Equals(skipProperty))
+                    if (skippedProperties.Contains(property.Name))
                     {
                         // this property has a SpreadsheetTabNameAttribute
                         // with ExcludeFromOutput set to true
@@ -190,6 +190,35 @@
             }
 
             return worksheet;
+        }
+
+        private static IList<string> GetSkippedPropertyNames(Type collectionType)
+        {
+            var excludedPropertyNames = Spreadsheet.GetExcludedSpreadsheetPropertyNames(collectionType);
+            var excludedTabNames = Spreadsheet.GetExcludedSpreadsheetTabNames(collectionType);
+
+            IList<string> excluded = excludedPropertyNames.Concat(excludedTabNames).ToList();
+
+            return excluded;
+        }
+
+        private static IEnumerable<string> GetExcludedSpreadsheetPropertyNames(Type collectionType)
+        {
+            var excludedPropertyNames = from prop in collectionType.GetProperties()
+                                     where Attribute.IsDefined(prop, typeof(SpreadsheetExcludeFromOutputAttribute), true)
+                                     select prop.Name;
+
+            return excludedPropertyNames;
+        }
+
+        private static IEnumerable<string> GetExcludedSpreadsheetTabNames(Type collectionType)
+        {
+            var excludedNames = from prop in collectionType.GetProperties()
+                                where Attribute.IsDefined(prop, typeof(SpreadsheetTabNameAttribute), true)
+                                && prop.GetCustomAttribute<SpreadsheetTabNameAttribute>().ExcludeFromOutput
+                                select prop.Name;
+
+            return excludedNames;
         }
 
         private static string GetWorksheetName(object firstRow, Type collectionType, out string skipProperty)
