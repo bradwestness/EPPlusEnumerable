@@ -158,3 +158,4 @@ $RECYCLE.BIN/
 
 # Mac desktop service store files
 .DS_Store
+/EPPlusEnumerable.sln.GhostDoc.xml
