@@ -1,19 +1,21 @@
-﻿using OfficeOpenXml;
-using OfficeOpenXml.Table;
-using System;
-using System.Collections.Generic;
-using System.ComponentModel;
-using System.ComponentModel.DataAnnotations;
-using System.Drawing;
-using System.Linq;
-using System.Reflection;
-
-namespace EPPlusEnumerable
+﻿namespace EPPlusEnumerable
 {
+    using System;
+    using System.Collections.Generic;
+    using System.ComponentModel;
+    using System.ComponentModel.DataAnnotations;
+    using System.Drawing;
+    using System.Linq;
+    using System.Reflection;
+
+    using OfficeOpenXml;
+    using OfficeOpenXml.Table;
+
     public static class Spreadsheet
     {
         #region Static Fields
 
+        // ReSharper disable once InconsistentNaming
         private static readonly char[] _letters = "ABCDEFGHIJKLMNOPQRSTUVWXYZ".ToArray();
 
         private const TableStyles DefaultTableStyle = TableStyles.Medium16;
@@ -23,60 +25,52 @@ namespace EPPlusEnumerable
         #region Public Methods
 
         /// <summary>
-        /// Creates an Excel spreadsheet with worksheets for each collection of objects.
+        ///     Creates an Excel spreadsheet with worksheets for each collection of objects.
         /// </summary>
-        /// <param name="data">A collection of data collections. Each outer collection will be used as a worksheet, while the inner collections will be used as data rows.</param>
+        /// <param name="data">
+        ///     A collection of data collections. Each outer collection will be used as a worksheet, while the inner
+        ///     collections will be used as data rows.
+        /// </param>
         /// <returns>An Excel spreadsheet as a byte array.</returns>
         public static byte[] Create(IEnumerable<IEnumerable<object>> data)
         {
             var package = new ExcelPackage();
-
-            foreach (var collection in data)
-            {
-                AddWorksheet(package, collection);
-            }
-
-            AddSpreadsheetLinks(package, data);
+            Spreadsheet.AddData(ref package, data);
 
             return package.GetAsByteArray();
         }
 
         /// <summary>
-        /// Creates an Excel spreadsheet with worksheets for each collection of objects.
+        ///     Creates an Excel spreadsheet with worksheets for each collection of objects.
         /// </summary>
-        /// <param name="data">A collection of data collections. Each outer collection will be used as a worksheet, while the inner collections will be used as data rows.</param>
+        /// <param name="data">
+        ///     A collection of data collections. Each outer collection will be used as a worksheet, while the inner
+        ///     collections will be used as data rows.
+        /// </param>
         /// <returns>A populated ExcelPackage object.</returns>
         public static ExcelPackage CreatePackage(IEnumerable<IEnumerable<object>> data)
         {
             var package = new ExcelPackage();
-
-            foreach (var collection in data)
-            {
-                AddWorksheet(package, collection);
-            }
-
-            AddSpreadsheetLinks(package, data);
+            Spreadsheet.AddData(ref package, data);
 
             return package;
         }
 
         /// <summary>
-        /// Creates an Excel spreadsheet with a single worksheet for the supplied data.
+        ///     Creates an Excel spreadsheet with a single worksheet for the supplied data.
         /// </summary>
         /// <param name="data">Each row of the spreadsheet will contain one item from the data collection.</param>
         /// <returns>An Excel spreadsheet as a byte array.</returns>
         public static byte[] Create(IEnumerable<object> data)
         {
             var package = new ExcelPackage();
-
-            AddWorksheet(package, data);
-            AddSpreadsheetLinks(package, new[] { data });
+            Spreadsheet.AddData(ref package, data);
 
             return package.GetAsByteArray();
         }
 
         /// <summary>
-        /// Creates an Excel spreadsheet with a single worksheet for the supplied data.
+        ///     Creates an Excel spreadsheet with a single worksheet for the supplied data.
         /// </summary>
         /// <param name="data">Each row of the spreadsheet will contain one item from the data collection.</param>
         /// <returns>A populated ExcelPackage object.</returns>
@@ -84,36 +78,70 @@ namespace EPPlusEnumerable
         {
             var package = new ExcelPackage();
 
-            AddWorksheet(package, data);
-            AddSpreadsheetLinks(package, new[] { data });
+            Spreadsheet.AddData(ref package, data);
 
             return package;
+        }
+
+        /// <summary>
+        ///     Adds a sinlge worksheet for the supplied data to the provided excel package.
+        /// </summary>
+        /// <param name="package">Existing ExcelPackage object.</param>
+        /// <param name="data">Each row of the added worksheet will contain one item from the data collection.</param>
+        public static void AddData(ref ExcelPackage package, IEnumerable<object> data)
+        {
+            IEnumerable<object> enumerable = data as IList<object> ?? data.ToList();
+
+            Spreadsheet.AddWorksheet(package, enumerable);
+            Spreadsheet.AddSpreadsheetLinks(package, new[] { enumerable });
+        }
+
+        /// <summary>
+        ///     Adds data to an Excel spreadsheet ExcelPackage with worksheets for each collection of objects.
+        /// </summary>
+        /// <param name="data">
+        ///     A collection of data collections. Each outer collection will be used as a worksheet, while the inner
+        ///     collections will be used as data rows.
+        /// </param>
+        /// <returns>A populated ExcelPackage object.</returns>
+        public static void AddData(ref ExcelPackage package, IEnumerable<IEnumerable<object>> data)
+        {
+            IEnumerable<IEnumerable<object>> collections = data as IList<IEnumerable<object>> ?? data.ToList();
+
+            foreach (IEnumerable<object> collection in collections)
+            {
+                Spreadsheet.AddWorksheet(package, collection);
+            }
+
+            Spreadsheet.AddSpreadsheetLinks(package, collections);
         }
 
         #endregion
 
         #region Private Methods
 
+        // ReSharper disable once UnusedMethodReturnValue.Local
         private static ExcelWorksheet AddWorksheet(ExcelPackage package, IEnumerable<object> data)
         {
-            if (data == null || !data.Any())
+            IEnumerable<object> enumerable = data as IList<object> ?? data.ToList();
+            if (data == null || !enumerable.Any())
             {
                 return null;
             }
 
-            string skipProperty = null;
-            var firstRow = data.First();
-            var collectionType = firstRow.GetType();
-            var properties = collectionType.GetProperties();
-            var worksheetName = GetWorksheetName(firstRow, collectionType, out skipProperty);
-            var worksheet = package.Workbook.Worksheets.Add(worksheetName);
+            string skipProperty;
+            object firstRow = enumerable.First();
+            Type collectionType = firstRow.GetType();
+            PropertyInfo[] properties = collectionType.GetProperties();
+            var worksheetName = Spreadsheet.GetWorksheetName(firstRow, collectionType, out skipProperty);
+            ExcelWorksheet worksheet = package.Workbook.Worksheets.Add(worksheetName);
             var col = 0;
 
             // add column headings
             for (var i = 0; i < properties.Count(); i++)
             {
-                var property = properties[i];
-                var propertyName = GetPropertyName(property);
+                PropertyInfo property = properties[i];
+                var propertyName = Spreadsheet.GetPropertyName(property);
 
                 if (skipProperty != null && property.Name.Equals(skipProperty))
                 {
@@ -121,18 +149,18 @@ namespace EPPlusEnumerable
                 }
 
                 col += 1;
-                worksheet.Cells[string.Format("{0}1", GetColumnLetter(col))].Value = propertyName;
+                worksheet.Cells[string.Format("{0}1", Spreadsheet.GetColumnLetter(col))].Value = propertyName;
             }
 
             // add rows (starting with two, since Excel is 1-based and we added a row of column headings)
-            for (var row = 2; row < data.Count() + 2; row++)
+            for (var row = 2; row < enumerable.Count() + 2; row++)
             {
-                var item = data.ElementAt(row - 2);
+                object item = enumerable.ElementAt(row - 2);
                 col = 0;
 
                 for (var i = 0; i < properties.Count(); i++)
                 {
-                    var property = properties.ElementAt(i);
+                    PropertyInfo property = properties.ElementAt(i);
 
                     if (skipProperty != null && property.Name.Equals(skipProperty))
                     {
@@ -142,19 +170,23 @@ namespace EPPlusEnumerable
                     }
 
                     col += 1;
-                    var cell = string.Format("{0}{1}", GetColumnLetter(col), row);
-                    var value = property.GetValue(item) ?? string.Empty;
-                    worksheet.Cells[cell].Value = GetPropertyValue(property, item);
+                    var cell = string.Format("{0}{1}", Spreadsheet.GetColumnLetter(col), row);
+
+                    object value = property.GetValue(item) ?? string.Empty;
+                    worksheet.Cells[cell].Value = Spreadsheet.GetPropertyValue(property, item);
                 }
             }
 
             // set table formatting
-            using (var range = worksheet.Cells[string.Format("A1:{0}{1}", GetColumnLetter(col), data.Count() + 1)])
+            using (
+                ExcelRange range =
+                    worksheet.Cells[string.Format("A1:{0}{1}", Spreadsheet.GetColumnLetter(col), enumerable.Count() + 1)
+                        ])
             {
                 range.AutoFitColumns();
 
-                var table = worksheet.Tables.Add(range, "table_" + worksheetName);
-                table.TableStyle = GetTableStyle(collectionType);
+                ExcelTable table = worksheet.Tables.Add(range, "table_" + worksheetName);
+                table.TableStyle = Spreadsheet.GetTableStyle(collectionType);
             }
 
             return worksheet;
@@ -173,14 +205,14 @@ namespace EPPlusEnumerable
                 worksheetName = worksheetName.Substring(0, worksheetName.IndexOf('_'));
             }
 
-            var worksheetNameProperty = collectionType
-                .GetProperties()
-                .FirstOrDefault(prop => Attribute.IsDefined(prop, typeof(SpreadsheetTabNameAttribute), true));
+            PropertyInfo worksheetNameProperty =
+                collectionType.GetProperties()
+                    .FirstOrDefault(prop => Attribute.IsDefined(prop, typeof(SpreadsheetTabNameAttribute), true));
 
             if (worksheetNameProperty != null)
             {
                 var worksheetNameAttribute = worksheetNameProperty.GetCustomAttribute<SpreadsheetTabNameAttribute>(true);
-                var worksheetPropertyValue = worksheetNameProperty.GetValue(firstRow);
+                object worksheetPropertyValue = worksheetNameProperty.GetValue(firstRow);
 
                 if (!string.IsNullOrWhiteSpace(worksheetNameAttribute.FormatString))
                 {
@@ -220,7 +252,7 @@ namespace EPPlusEnumerable
 
         private static TableStyles GetTableStyle(Type collectionType)
         {
-            var tableStyle = DefaultTableStyle;
+            TableStyles tableStyle = Spreadsheet.DefaultTableStyle;
 
             var spreadsheetTableStyleAttribute = collectionType.GetCustomAttribute<SpreadsheetTableStyleAttribute>(true);
             if (spreadsheetTableStyleAttribute != null)
@@ -254,7 +286,7 @@ namespace EPPlusEnumerable
 
         private static object GetPropertyValue(PropertyInfo property, object item)
         {
-            var inputValue = property.GetValue(item);
+            object inputValue = property.GetValue(item);
             object outputValue = string.Empty;
 
             var displayFormatAttribute = property.GetCustomAttribute<DisplayFormatAttribute>(true);
@@ -297,7 +329,7 @@ namespace EPPlusEnumerable
 
         private static void AddSpreadsheetLinks(ExcelPackage package, IEnumerable<IEnumerable<object>> data)
         {
-            foreach (var collection in data)
+            foreach (IEnumerable<object> collection in data)
             {
                 if (collection == null || !collection.Any())
                 {
@@ -305,11 +337,11 @@ namespace EPPlusEnumerable
                 }
 
                 string skipProperty = null;
-                var firstRow = collection.First();
-                var collectionType = firstRow.GetType();
-                var properties = collectionType.GetProperties();
-                var worksheetName = GetWorksheetName(firstRow, collectionType, out skipProperty);
-                var worksheet = package.Workbook.Worksheets[worksheetName];
+                object firstRow = collection.First();
+                Type collectionType = firstRow.GetType();
+                PropertyInfo[] properties = collectionType.GetProperties();
+                var worksheetName = Spreadsheet.GetWorksheetName(firstRow, collectionType, out skipProperty);
+                ExcelWorksheet worksheet = package.Workbook.Worksheets[worksheetName];
 
                 if (worksheet == null)
                 {
@@ -320,7 +352,7 @@ namespace EPPlusEnumerable
                 // and see if any have a SpreadsheetLinkAttribute specified
                 for (var prop = 1; prop <= properties.Count(); prop++)
                 {
-                    var property = properties.ElementAt(prop - 1);
+                    PropertyInfo property = properties.ElementAt(prop - 1);
 
                     if (skipProperty != null && property.Name.Equals(skipProperty))
                     {
@@ -339,7 +371,7 @@ namespace EPPlusEnumerable
                     }
 
                     // get the worksheet specified by the attribute
-                    var linkSheet = package.Workbook.Worksheets[attribute.WorksheetName];
+                    ExcelWorksheet linkSheet = package.Workbook.Worksheets[attribute.WorksheetName];
 
                     if (linkSheet == null)
                     {
@@ -355,7 +387,7 @@ namespace EPPlusEnumerable
                     // match the attribute's column header value
                     for (var col = 1; col <= linkSheet.Dimension.Columns; col++)
                     {
-                        var letter = GetColumnLetter(col);
+                        var letter = Spreadsheet.GetColumnLetter(col);
                         if (linkSheet.Cells[letter + "1"].Value.ToString().Equals(attribute.ColumnHeaderValue))
                         {
                             linkColumn = letter;
@@ -366,33 +398,43 @@ namespace EPPlusEnumerable
                     if (!string.IsNullOrWhiteSpace(linkColumn))
                     {
                         // we found the target column of the target worksheet, so we can add links!
-                        AddColumnLinks(worksheet, prop, linkSheet, linkColumn);
+                        Spreadsheet.AddColumnLinks(worksheet, prop, linkSheet, linkColumn);
                     }
                 }
             }
         }
 
-        private static void AddColumnLinks(ExcelWorksheet worksheet, int worksheetColumnIndex, ExcelWorksheet linkSheet, string linkColumn)
+        private static void AddColumnLinks(
+            ExcelWorksheet worksheet,
+            int worksheetColumnIndex,
+            ExcelWorksheet linkSheet,
+            string linkColumn)
         {
             // loop through the cells of the worksheet that correspond to the property
             // that had the SpreadsheetLinkAttribute and try to find a link target for each
             for (var worksheetRow = 1; worksheetRow <= worksheet.Dimension.Rows; worksheetRow++)
             {
-                var worksheetCell = worksheet.Cells[string.Format("{0}{1}", GetColumnLetter(worksheetColumnIndex), worksheetRow)];
+                ExcelRange worksheetCell =
+                    worksheet.Cells[
+                        string.Format("{0}{1}", Spreadsheet.GetColumnLetter(worksheetColumnIndex), worksheetRow)];
                 var worksheetValue = worksheetCell.Value.ToString();
 
                 // loop through the cells of the target worksheet column and see if any of the values
                 // match the value of the current worksheet cell
                 for (var linksheetRow = 1; linksheetRow <= linkSheet.Dimension.Rows; linksheetRow++)
                 {
-                    var linksheetValue = linkSheet.Cells[string.Format("{0}{1}", linkColumn, linksheetRow)].Value.ToString();
+                    var linksheetValue =
+                        linkSheet.Cells[string.Format("{0}{1}", linkColumn, linksheetRow)].Value.ToString();
 
                     if (worksheetValue.Equals(linksheetValue))
                     {
                         // we found a match! this is the link target,
                         // so add the hyperlink to the worksheet cell
                         // and stop searching for targets for this row
-                        worksheetCell.Hyperlink = new ExcelHyperLink(string.Format("'{0}'!{1}{2}", linkSheet.Name, linkColumn, linksheetRow), worksheetValue.ToString());
+                        worksheetCell.Hyperlink =
+                            new ExcelHyperLink(
+                                string.Format("'{0}'!{1}{2}", linkSheet.Name, linkColumn, linksheetRow),
+                                worksheetValue);
                         worksheetCell.Style.Font.UnderLine = true;
                         worksheetCell.Style.Font.Color.SetColor(Color.Blue);
                         break;
@@ -402,25 +444,25 @@ namespace EPPlusEnumerable
         }
 
         /// <summary>
-        /// Gets the Excel-style column letter for the specified numerical index (e.g. 4 is D, 26 is Z, 27 is AA, 28 is AB...).
+        ///     Gets the Excel-style column letter for the specified numerical index (e.g. 4 is D, 26 is Z, 27 is AA, 28 is AB...).
         /// </summary>
         /// <param name="column">The numerical index of the column.</param>
         /// <returns>The corresponding Excel-style column letter.</returns>
         private static string GetColumnLetter(int column)
         {
-            if (column <= _letters.Length)
+            if (column <= Spreadsheet._letters.Length)
             {
-                return _letters[column - 1].ToString();
+                return Spreadsheet._letters[column - 1].ToString();
             }
 
             var number = column;
-            string letter = string.Empty;
+            var letter = string.Empty;
 
             while (number > 0)
             {
-                var remainder = (number - 1) % _letters.Length;
-                letter = _letters[remainder] + letter;
-                number = (number - remainder) / _letters.Length;
+                var remainder = (number - 1) % Spreadsheet._letters.Length;
+                letter = Spreadsheet._letters[remainder] + letter;
+                number = (number - remainder) / Spreadsheet._letters.Length;
             }
 
             return letter;
