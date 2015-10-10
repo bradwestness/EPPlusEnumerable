@@ -3,6 +3,7 @@
     using System;
     using System.Collections.Generic;
     using System.Linq;
+    using System.Reflection;
 
     using Faker;
     using Faker.Generators;
@@ -17,62 +18,136 @@
         public void WorksheetNameAttribute()
         {
             // Arrange
-            int rows = 1000;
-            var dataGenerator = new Fake<Grid>();
-            dataGenerator.SetProperty(x => x.DateTime, () => new DateTime(DateTime.UtcNow.Year, Numbers.Int(1, 13), 1));
-            var data = dataGenerator.Generate(rows);
-            var groupedData = data.GroupBy(x => x.DateTime).ToList();
+            List<IGrouping<DateTime, SampleTestModel>> groupedData = UnitTests.GivenGroupedData();
 
             // Act
-            var package = Spreadsheet.CreatePackage(groupedData);
+            ExcelPackage package = UnitTests.WhenExporting(groupedData);
 
             // Assert
             Assert.True(package.Workbook.Worksheets.Count == groupedData.Count);
-            for (int i = 1; i < package.Workbook.Worksheets.Count; i++)
+            for (var i = 1; i < package.Workbook.Worksheets.Count; i++)
             {
                 Assert.True(package.Workbook.Worksheets[i].Dimension.End.Row == groupedData[i - 1].Count() + 1);
                 Assert.True(package.Workbook.Worksheets[i].Name == groupedData[i - 1].Key.ToString("MMMM yyyy"));
-                Assert.True(ValidWorksheet(package.Workbook.Worksheets[i], groupedData[i - 1].ToList()));
+                UnitTests.ThenGeneratedWorksheetIsValid(package.Workbook.Worksheets[i], groupedData[i - 1].ToList());
             }
-            
-        } 
+        }
+
+        private static List<IGrouping<DateTime, SampleTestModel>> GivenGroupedData()
+        {
+            var rows = 1000;
+            var dataGenerator = new Fake<SampleTestModel>();
+            dataGenerator.SetProperty(x => x.DateTime, () => new DateTime(DateTime.UtcNow.Year, Numbers.Int(1, 13), 1));
+            IList<SampleTestModel> data = dataGenerator.Generate(rows);
+            List<IGrouping<DateTime, SampleTestModel>> groupedData = data.GroupBy(x => x.DateTime).ToList();
+            return groupedData;
+        }
+
+        [Fact]
+        public void
+            GivenDataContainsPropertyMarkedWithExcludeAttributeWhenExportingThenGeneratedWorksheetDoesNotContainColumnForThisProperty
+            ()
+        {
+            IList<SampleTestModelWithExcludedProperty> data =
+                UnitTests.GivenDataContainingPropertyMarkedWithExcludeAttribute();
+            ExcelPackage package = UnitTests.WhenExporting(data);
+
+            UnitTests.ThenGeneratedWorksheetIsValid(package.Workbook.Worksheets.First(), data);
+            UnitTests.ThenGeneratedWorksheetDoesNotContainColumnForThisProperty(
+                package.Workbook.Worksheets.First(),
+                data);
+        }
+
+        private static void ThenGeneratedWorksheetDoesNotContainColumnForThisProperty<T>(
+            ExcelWorksheet worksheet,
+            IList<T> data)
+        {
+            T first = data.First();
+            Type parameterType = first.GetType();
+            PropertyInfo[] properties = parameterType.GetProperties();
+
+            foreach (PropertyInfo propertyInfo in properties)
+            {
+                var shouldExport = propertyInfo.GetCustomAttribute<SpreadsheetExcludeFromOutputAttribute>() != null;
+                if (shouldExport)
+                {
+                    return;
+                }
+
+                var isEmpty =
+                    !(from c in worksheet.Cells[1, 1, 1, 100] where c.Text != propertyInfo.Name select c).Any();
+                Assert.False(
+                    isEmpty,
+                    string.Format(
+                        "The generated worksheet contains column for excluded property:  \"{0}\"",
+                        propertyInfo.Name));
+            }
+        }
+
+        private static void ThenGeneratedWorksheetIsValid<T>(ExcelWorksheet worksheet, IList<T> data)
+        {
+            Assert.True(UnitTests.ValidWorksheet(worksheet, data));
+        }
+
+        private static ExcelPackage WhenExporting<T>(IList<T> data)
+        {
+            if (data is IEnumerable<IEnumerable<object>>)
+            {
+                var sets = (IEnumerable<IEnumerable<object>>)data;
+                return Spreadsheet.CreatePackage(sets);
+            }
+
+            IEnumerable<object> list = data.Cast<object>();
+            return Spreadsheet.CreatePackage(list);
+        }
+
+        private static IList<SampleTestModelWithExcludedProperty> GivenDataContainingPropertyMarkedWithExcludeAttribute(
+            )
+        {
+            var rows = 100;
+            var dataGenerator = new Fake<SampleTestModelWithExcludedProperty>();
+            dataGenerator.SetProperty(x => x.Created, () => DateTime.UtcNow);
+            dataGenerator.SetProperty(x => x.Name, () => Names.FullName());
+            dataGenerator.SetProperty(x => x.Email, () => EmailAddresses.Generate(false, 10, 100));
+            IList<SampleTestModelWithExcludedProperty> data = dataGenerator.Generate(rows);
+            return data;
+        }
 
         [Fact]
         public void NoRows()
         {
             // Arrange
-            var data = new List<Grid>();
+            var data = new List<SampleTestModel>();
 
             // Act
-            var package = Spreadsheet.CreatePackage(data);
+            ExcelPackage package = Spreadsheet.CreatePackage(data);
 
             // Assert
             Assert.True(package.Workbook.Worksheets.Count == 0);
-
         }
 
         [Fact]
         public void ValidateData()
         {
             // Arrange
-            int rows = 1000;
-            var dataGenerator = new Fake<Grid>();
-            var data = dataGenerator.Generate(rows);
+            var rows = 1000;
+            var dataGenerator = new Fake<SampleTestModel>();
+            IList<SampleTestModel> data = dataGenerator.Generate(rows);
 
             // Act
-            var package = Spreadsheet.CreatePackage(data);
+            ExcelPackage package = Spreadsheet.CreatePackage(data);
 
             // Assert
             Assert.True(package.Workbook.Worksheets.Count == 1);
             Assert.True(package.Workbook.Worksheets[1].Dimension.End.Row == rows + 1);
-            Assert.True(ValidWorksheet(package.Workbook.Worksheets[1], data));
+            Assert.True(UnitTests.ValidWorksheet(package.Workbook.Worksheets[1], data));
         }
 
-        private static bool ValidWorksheet(ExcelWorksheet excelWorksheet, IList<Grid> data)
+        private static bool ValidWorksheet<T>(ExcelWorksheet excelWorksheet, IList<T> data)
         {
-            for (int i = 2; i <= data.Count; i++)
+            for (var i = 2; i <= data.Count; i++)
             {
-                var validRow = ValidRow(excelWorksheet, i, data[i - 2]);
+                var validRow = UnitTests.ValidRow(excelWorksheet, i, data[i - 2]);
                 if (!validRow)
                 {
                     return false;
@@ -82,24 +157,32 @@
             return true;
         }
 
-        private static bool ValidRow(ExcelWorksheet excelWorksheet, int row, Grid grid)
+        private static bool ValidRow<T>(ExcelWorksheet excelWorksheet, int row, T testModel)
         {
-            var properties = grid.GetType().GetProperties().ToList();
+            List<PropertyInfo> properties = testModel.GetType().GetProperties().ToList();
 
-            foreach (var propertyInfo in properties)
+            var count = 0;
+            foreach (PropertyInfo propertyInfo in properties)
             {
-                var value = excelWorksheet.Cells[row, properties.IndexOf(propertyInfo) + 1].Value;
-                if (propertyInfo.GetValue(grid).ToString() != value.ToString())
+                var shouldSkip = propertyInfo.GetCustomAttribute<SpreadsheetExcludeFromOutputAttribute>() != null;
+                if (shouldSkip)
+                {
+                    continue;
+                }
+
+                count++;
+                object value = excelWorksheet.Cells[row, count].Value;
+                if (propertyInfo.GetValue(testModel).ToString() != value.ToString())
                 {
                     return false;
                 }
             }
 
             return true;
-        }      
+        }
     }
 
-    internal class Grid
+    internal class SampleTestModel
     {
         public int Id { get; set; }
 
@@ -109,5 +192,17 @@
 
         [SpreadsheetTabName(FormatString = "{0:MMMM yyyy}")]
         public DateTime DateTime { get; set; }
+    }
+
+    internal class SampleTestModelWithExcludedProperty
+    {
+        public int Id { get; set; }
+
+        public string Name { get; set; }
+
+        public string Email { get; set; }
+
+        [SpreadsheetExcludeFromOutput]
+        public DateTime Created { get; set; }
     }
 }
