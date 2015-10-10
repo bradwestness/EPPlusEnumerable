@@ -50,7 +50,8 @@ namespace SampleConsoleApp
                             Number = order.OrderID,
                             Date = order.OrderDate.Value,
                             Item = order.Order_Details.First().Product.ProductName,
-                            Price = order.Order_Details.First().UnitPrice
+                            Price = order.Order_Details.First().UnitPrice,
+                            GarbageData = Guid.NewGuid()
                         });
                     }
                 }
