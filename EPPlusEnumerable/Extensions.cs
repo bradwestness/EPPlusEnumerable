@@ -33,5 +33,36 @@
         {
             return element.GetValue(obj, BindingFlags.Default, null, null, null);
         }
+        
+        /// <summary>
+        /// Crawls up the parent class to find any MetadaType to search for attributes as well.
+        /// </summary>
+        /// <typeparam name="T"></typeparam>
+        /// <param name="element">The property we're searchign for attributes on</param>
+        /// <param name="type">The parent type of the property</param>
+        /// <param name="inherit"></param>
+        /// <returns></returns>
+        public static T GetMetaAttribute<T>(this MemberInfo element, Type type, bool inherit = true) where T : Attribute
+        {
+            T metaAttr = null;
+            // Get the MetadataType Attribute from the parent class
+            var metaTypeAttrs = (MetadataTypeAttribute)type
+                .GetCustomAttributes(typeof(MetadataTypeAttribute), inherit)
+                .OfType<MetadataTypeAttribute>()
+                .FirstOrDefault();
+
+            // Check for null to avoid too much reflection
+            if(metaTypeAttrs != null)
+            {
+                // Get the MetadataClass to check for attributes on
+                var metaType = metaTypeAttrs.MetadataClassType;
+                // Find the current element in the MetadataClass
+                var metaElement = metaType?.GetMember(element.Name).FirstOrDefault();
+                
+                metaAttr = metaElement?.GetCustomAttribute<T>(inherit)
+            }
+            
+            return metaAttr;
+        }
     }
 }
