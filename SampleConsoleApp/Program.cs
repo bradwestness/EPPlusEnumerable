@@ -46,9 +46,10 @@ namespace SampleConsoleApp
 
         public string Zip { get; set; }
     }
-
+    
+    [MetadataType(typeof(OrdersMetadata))]
     [DisplayName("Orders"), SpreadsheetTableStyle(TableStyles.Medium16)]
-    public class Order
+    public partial class Order
     {
         public int Number { get; set; }
 
@@ -62,5 +63,16 @@ namespace SampleConsoleApp
 
         [SpreadsheetTabName(FormatString = "{0:MMMM yyyy}")]
         public DateTime Date { get; set; }
+    }
+    
+    // Metadata class for Orders. The new GetMetaAttribute extension method will find this and crawl it for attributes.
+    public class OrdersMetadata
+    {
+        [Display(Name = "Order #")]
+        public int Number { get; set; }
+        [DisplayName("Item Price")]
+        public decimal Price { get; set; }
+        [DisplayName("Customer Name")]
+        public string Customer { get; set; }
     }
 }
