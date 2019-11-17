@@ -138,11 +138,18 @@ namespace EPPlusEnumerable
                     {
                         continue;
                     }
-
+                                        
                     col += 1;
                     var cell = string.Format("{0}{1}", GetColumnLetter(col), row);
+
+                    var cellStyleAttribute = property.GetCustomAttribute<SpreadsheetCellStyleAttribute>();
+                    if (cellStyleAttribute != null)
+                    {
+                        cellStyleAttribute.ApplyCellStyles(worksheet.Cells[cell]);
+                    }
+
                     var value = property.GetValue(item) ?? string.Empty;
-                    worksheet.Cells[cell].Value = GetPropertyValue(property, item);
+                    worksheet.Cells[cell].Value = GetPropertyValue(property, item);                    
                 }
             }
 

@@ -37,6 +37,7 @@ public class Order
 {
     public int Number { get; set; }
 
+	[SpreadsheetCellStyle(bold: true, backgroundHtmlColor: "#00cc00", fontHtmlColor: "lime")]
     public string Item { get; set; }
 
     [SpreadsheetLink("Customers", "Name")]

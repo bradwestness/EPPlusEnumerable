@@ -8,7 +8,7 @@
     using Faker.Generators;
 
     using OfficeOpenXml;
-
+    using OfficeOpenXml.Style;
     using Xunit;
 
     public class UnitTests
@@ -105,6 +105,7 @@
 
         public string Name { get; set; }
 
+        [SpreadsheetCellStyle(horizontalAlignment: ExcelHorizontalAlignment.Center, wrapText: true)]
         public string Email { get; set; }
 
         [SpreadsheetTabName(FormatString = "{0:MMMM yyyy}")]
