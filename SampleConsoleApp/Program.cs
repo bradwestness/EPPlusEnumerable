@@ -1,4 +1,5 @@
 ﻿using EPPlusEnumerable;
+using OfficeOpenXml.Style;
 using OfficeOpenXml.Table;
 using System;
 using System.Collections.Generic;
@@ -14,12 +15,12 @@ namespace SampleConsoleApp
         static void Main(string[] args)
         {
             var data = new List<IEnumerable<object>>();
-            
+
             using (var db = new SampleDataContext())
             {
                 data.Add(db.Users.OrderBy(x => x.Name).ToList());
 
-                foreach(var grouping in db.Orders.OrderBy(x => x.Date).GroupBy(x => x.Date.Month))
+                foreach (var grouping in db.Orders.OrderBy(x => x.Date).GroupBy(x => x.Date.Month))
                 {
                     data.Add(grouping.ToList());
                 }
@@ -38,10 +39,12 @@ namespace SampleConsoleApp
         [SpreadsheetExclude]
         public string Password { get; set; }
 
+        [SpreadsheetCellStyle(verticalAlignment: ExcelVerticalAlignment.Top, horizontalAlignment: ExcelHorizontalAlignment.Center, wrapText: true)]
         public string Address { get; set; }
 
         public string City { get; set; }
 
+        [SpreadsheetCellStyle(bold: true, backgroundHtmlColor: "#00cc00", fontHtmlColor: "red")]
         public string Country { get; set; }
 
         public string Zip { get; set; }

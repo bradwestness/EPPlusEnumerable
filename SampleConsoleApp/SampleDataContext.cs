@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Net;
 
 namespace SampleConsoleApp
 {
@@ -8,13 +9,17 @@ namespace SampleConsoleApp
     {
         #region Properties
 
-        private static readonly IList<Northwind.Customer> data = 
-            new Northwind.NorthwindEntities(new Uri("http://services.odata.org/northwind/northwind.svc/"))
-            .Customers
-            .Expand("Orders")
-            .Expand("Orders/Order_Details")
-            .Expand("Orders/Order_Details/Product")
-            .ToList();
+        private static readonly Lazy<IList<Northwind.Customer>> _data = new Lazy<IList<Northwind.Customer>>(() =>
+        {
+            ServicePointManager.SecurityProtocol = SecurityProtocolType.Tls12;
+
+            return new Northwind.NorthwindEntities(new Uri("https://services.odata.org/northwind/northwind.svc/"))
+                .Customers
+                .Expand("Orders")
+                .Expand("Orders/Order_Details")
+                .Expand("Orders/Order_Details/Product")
+                .ToList();
+        });
 
         public IEnumerable<User> Users { get; set; }
 
@@ -29,7 +34,7 @@ namespace SampleConsoleApp
             IList<User> users = new List<User>();
             IList<Order> orders = new List<Order>();
 
-            foreach(var customer in data)
+            foreach (var customer in _data.Value)
             {
                 if (customer.Orders.Any(x => x.OrderDate.HasValue && x.Order_Details.Any(y => y.Product != null)))
                 {
@@ -42,7 +47,7 @@ namespace SampleConsoleApp
                         Zip = customer.PostalCode
                     });
 
-                    foreach(var order in customer.Orders.Where(x => x.OrderDate.HasValue && x.Order_Details.Any(y => y.Product != null)))
+                    foreach (var order in customer.Orders.Where(x => x.OrderDate.HasValue && x.Order_Details.Any(y => y.Product != null)))
                     {
                         orders.Add(new Order
                         {

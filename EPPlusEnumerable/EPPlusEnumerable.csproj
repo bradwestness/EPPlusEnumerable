@@ -52,6 +52,7 @@
     <Compile Include="Extensions.cs" />
     <Compile Include="Spreadsheet.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
+    <Compile Include="SpreadsheetCellStyleAttribute.cs" />
     <Compile Include="SpreadsheetExcludeAttribute.cs" />
     <Compile Include="SpreadsheetTabNameAttribute.cs" />
     <Compile Include="SpreadsheetTableStyleAttribute.cs" />
