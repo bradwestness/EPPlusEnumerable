@@ -1,33 +1,33 @@
-﻿namespace EPPlusEnumerable
-{
-    using System;
-    using System.ComponentModel.DataAnnotations;
-    using System.Linq;
-    using System.Reflection;
+﻿using System;
+using System.ComponentModel.DataAnnotations;
+using System.Linq;
+using System.Reflection;
 
+namespace EPPlusEnumerable
+{
     internal static class Extensions
     {
         public static T GetCustomAttribute<T>(this MemberInfo element, Type type, bool inherit) where T : Attribute
         {
             var attr = (T)Attribute.GetCustomAttribute(element, typeof(T), inherit);
-            
+
             if (attr == null)
             {
                 return element.GetMetaAttribute<T>(type, inherit);
             }
-            
+
             return attr;
         }
 
         public static T GetCustomAttribute<T>(this MemberInfo element, Type type) where T : Attribute
         {
             var attr = (T)Attribute.GetCustomAttribute(element, typeof(T));
-            
+
             if (attr == null)
             {
                 return element.GetMetaAttribute<T>(type);
             }
-            
+
             return attr;
         }
 
@@ -35,7 +35,7 @@
         {
             return element.GetValue(obj, BindingFlags.Default, null, null, null);
         }
-        
+
         /// <summary>
         /// Crawls up the parent class to find any MetadaType to search for attributes as well.
         /// </summary>
@@ -54,16 +54,16 @@
                 .FirstOrDefault();
 
             // Check for null to avoid too much reflection
-            if(metaTypeAttrs != null)
+            if (metaTypeAttrs != null)
             {
                 // Get the MetadataClass to check for attributes on
                 var metaType = metaTypeAttrs.MetadataClassType;
                 // Find the current element in the MetadataClass
                 var metaElement = metaType?.GetMember(element.Name).FirstOrDefault();
-                
-                metaAttr = metaElement?.GetCustomAttribute<T>(inherit)
+
+                metaAttr = metaElement?.GetCustomAttribute<T>(metaType, inherit);
             }
-            
+
             return metaAttr;
         }
     }
