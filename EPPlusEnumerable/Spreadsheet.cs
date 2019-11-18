@@ -1,4 +1,4 @@
-﻿using OfficeOpenXml;
+using OfficeOpenXml;
 using OfficeOpenXml.Table;
 using System;
 using System.Collections.Generic;
@@ -112,9 +112,9 @@ namespace EPPlusEnumerable
             for (var i = 0; i < properties.Count(); i++)
             {
                 var property = properties[i];
-                var propertyName = GetPropertyName(property);
+                var propertyName = GetPropertyName(property, collectionType);
 
-                if (property.GetCustomAttribute<SpreadsheetExcludeAttribute>() != null)
+                if (property.GetCustomAttribute<SpreadsheetExcludeAttribute>(collectionType) != null)
                 {
                     // this property has a SpreadsheetExcludeAttribute
                     continue;
@@ -134,22 +134,22 @@ namespace EPPlusEnumerable
                 {
                     var property = properties.ElementAt(i);
 
-                    if (property.GetCustomAttribute<SpreadsheetExcludeAttribute>() != null)
+                    if (property.GetCustomAttribute<SpreadsheetExcludeAttribute>(collectionType) != null)
                     {
                         continue;
                     }
-                                        
+
                     col += 1;
                     var cell = string.Format("{0}{1}", GetColumnLetter(col), row);
 
-                    var cellStyleAttribute = property.GetCustomAttribute<SpreadsheetCellStyleAttribute>();
+                    var cellStyleAttribute = property.GetCustomAttribute<SpreadsheetCellStyleAttribute>(collectionType);
                     if (cellStyleAttribute != null)
                     {
                         cellStyleAttribute.ApplyCellStyles(worksheet.Cells[cell]);
                     }
 
                     var value = property.GetValue(item) ?? string.Empty;
-                    worksheet.Cells[cell].Value = GetPropertyValue(property, item);                    
+                    worksheet.Cells[cell].Value = GetPropertyValue(property, item);
                 }
             }
 
@@ -183,7 +183,7 @@ namespace EPPlusEnumerable
 
             if (worksheetNameProperty != null)
             {
-                var worksheetNameAttribute = worksheetNameProperty.GetCustomAttribute<SpreadsheetTabNameAttribute>(true);
+                var worksheetNameAttribute = worksheetNameProperty.GetCustomAttribute<SpreadsheetTabNameAttribute>(collectionType, true);
                 var worksheetPropertyValue = worksheetNameProperty.GetValue(firstRow);
 
                 if (!string.IsNullOrWhiteSpace(worksheetNameAttribute.FormatString))
@@ -197,14 +197,14 @@ namespace EPPlusEnumerable
             }
             else
             {
-                var displayNameAttribute = collectionType.GetCustomAttribute<DisplayNameAttribute>(true);
+                var displayNameAttribute = collectionType.GetCustomAttribute<DisplayNameAttribute>(collectionType, true);
                 if (displayNameAttribute != null)
                 {
                     worksheetName = displayNameAttribute.DisplayName;
                 }
                 else
                 {
-                    var displayAttribute = collectionType.GetCustomAttribute<DisplayAttribute>(true);
+                    var displayAttribute = collectionType.GetCustomAttribute<DisplayAttribute>(collectionType, true);
                     if (displayAttribute != null)
                     {
                         worksheetName = displayAttribute.Name;
@@ -219,7 +219,7 @@ namespace EPPlusEnumerable
         {
             var tableStyle = DefaultTableStyle;
 
-            var spreadsheetTableStyleAttribute = collectionType.GetCustomAttribute<SpreadsheetTableStyleAttribute>(true);
+            var spreadsheetTableStyleAttribute = collectionType.GetCustomAttribute<SpreadsheetTableStyleAttribute>(collectionType, true);
             if (spreadsheetTableStyleAttribute != null)
             {
                 tableStyle = spreadsheetTableStyleAttribute.TableStyle;
@@ -228,18 +228,18 @@ namespace EPPlusEnumerable
             return tableStyle;
         }
 
-        private static string GetPropertyName(PropertyInfo property)
+        private static string GetPropertyName(PropertyInfo property, Type collectionType)
         {
             var propertyName = property.Name;
 
-            var displayNameAttribute = property.GetCustomAttribute<DisplayNameAttribute>(true);
+            var displayNameAttribute = property.GetCustomAttribute<DisplayNameAttribute>(collectionType, true);
             if (displayNameAttribute != null)
             {
                 propertyName = displayNameAttribute.DisplayName;
             }
             else
             {
-                var displayAttribute = property.GetCustomAttribute<DisplayAttribute>(true);
+                var displayAttribute = property.GetCustomAttribute<DisplayAttribute>(collectionType, true);
                 if (displayAttribute != null)
                 {
                     propertyName = displayAttribute.Name;
@@ -254,7 +254,7 @@ namespace EPPlusEnumerable
             var inputValue = property.GetValue(item);
             object outputValue = string.Empty;
 
-            var displayFormatAttribute = property.GetCustomAttribute<DisplayFormatAttribute>(true);
+            var displayFormatAttribute = property.GetCustomAttribute<DisplayFormatAttribute>(item.GetType(), true);
             if (displayFormatAttribute != null)
             {
                 if (inputValue == null && !string.IsNullOrWhiteSpace(displayFormatAttribute.NullDisplayText))
@@ -318,12 +318,12 @@ namespace EPPlusEnumerable
                 {
                     var property = properties.ElementAt(prop - 1);
 
-                    if (property.GetCustomAttribute<SpreadsheetExcludeAttribute>() != null)
+                    if (property.GetCustomAttribute<SpreadsheetExcludeAttribute>(collectionType) != null)
                     {
                         continue;
                     }
 
-                    var attribute = property.GetCustomAttribute<SpreadsheetLinkAttribute>();
+                    var attribute = property.GetCustomAttribute<SpreadsheetLinkAttribute>(collectionType);
 
                     if (attribute == null)
                     {
