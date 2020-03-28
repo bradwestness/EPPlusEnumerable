@@ -1,4 +1,5 @@
 ﻿using EPPlusEnumerable;
+using OfficeOpenXml;
 using OfficeOpenXml.Style;
 using OfficeOpenXml.Table;
 using System;
@@ -26,6 +27,7 @@ namespace SampleConsoleApp
                 }
             }
 
+            ExcelPackage.LicenseContext = OfficeOpenXml.LicenseContext.NonCommercial;
             var bytes = Spreadsheet.Create(data);
             File.WriteAllBytes("MySpreadsheet.xlsx", bytes);
         }

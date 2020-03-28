@@ -1,14 +1,12 @@
 ﻿namespace EPPlusEnumerable.Tests
 {
+    using Faker;
+    using Faker.Generators;
+    using OfficeOpenXml;
+    using OfficeOpenXml.Style;
     using System;
     using System.Collections.Generic;
     using System.Linq;
-
-    using Faker;
-    using Faker.Generators;
-
-    using OfficeOpenXml;
-    using OfficeOpenXml.Style;
     using Xunit;
 
     public class UnitTests
@@ -24,6 +22,7 @@
             var groupedData = data.GroupBy(x => x.DateTime).ToList();
 
             // Act
+            ExcelPackage.LicenseContext = LicenseContext.NonCommercial;
             var package = Spreadsheet.CreatePackage(groupedData);
 
             // Assert
@@ -34,8 +33,8 @@
                 Assert.True(package.Workbook.Worksheets[i].Name == groupedData[i - 1].Key.ToString("MMMM yyyy"));
                 Assert.True(ValidWorksheet(package.Workbook.Worksheets[i], groupedData[i - 1].ToList()));
             }
-            
-        } 
+
+        }
 
         [Fact]
         public void NoRows()
@@ -44,6 +43,7 @@
             var data = new List<Grid>();
 
             // Act
+            ExcelPackage.LicenseContext = LicenseContext.NonCommercial;
             var package = Spreadsheet.CreatePackage(data);
 
             // Assert
@@ -60,6 +60,7 @@
             var data = dataGenerator.Generate(rows);
 
             // Act
+            ExcelPackage.LicenseContext = LicenseContext.NonCommercial;
             var package = Spreadsheet.CreatePackage(data);
 
             // Assert
@@ -96,7 +97,7 @@
             }
 
             return true;
-        }      
+        }
     }
 
     internal class Grid

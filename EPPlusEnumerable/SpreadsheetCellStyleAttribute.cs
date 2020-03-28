@@ -52,7 +52,7 @@ namespace EPPlusEnumerable
 
         public void ApplyCellStyles(ExcelRange range)
         {
-            if (range == null)
+            if (!(range is object))
             {
                 return;
             }
@@ -74,6 +74,7 @@ namespace EPPlusEnumerable
             }
         }
 
-        private Color HexToColor(string hexColor) => ColorTranslator.FromHtml(hexColor);
+        private Color HexToColor(string hexColor) =>
+            ColorTranslator.FromHtml(hexColor);
     }
 }

@@ -96,7 +96,7 @@ namespace EPPlusEnumerable
 
         private static ExcelWorksheet AddWorksheet(ExcelPackage package, IEnumerable<object> data)
         {
-            if (data == null || !data.Any())
+            if (!(data is object) || !data.Any())
             {
                 return null;
             }
@@ -114,14 +114,14 @@ namespace EPPlusEnumerable
                 var property = properties[i];
                 var propertyName = GetPropertyName(property, collectionType);
 
-                if (property.GetCustomAttribute<SpreadsheetExcludeAttribute>(collectionType) != null)
+                if (property.GetCustomAttribute<SpreadsheetExcludeAttribute>() is object)
                 {
                     // this property has a SpreadsheetExcludeAttribute
                     continue;
                 }
 
                 col += 1;
-                worksheet.Cells[string.Format("{0}1", GetColumnLetter(col))].Value = propertyName;
+                worksheet.Cells[$"{GetColumnLetter(col)}1"].Value = propertyName;
             }
 
             // add rows (starting with two, since Excel is 1-based and we added a row of column headings)
@@ -134,35 +134,52 @@ namespace EPPlusEnumerable
                 {
                     var property = properties.ElementAt(i);
 
-                    if (property.GetCustomAttribute<SpreadsheetExcludeAttribute>(collectionType) != null)
+                    if (property.GetCustomAttribute<SpreadsheetExcludeAttribute>() is object)
                     {
                         continue;
                     }
 
                     col += 1;
-                    var cell = string.Format("{0}{1}", GetColumnLetter(col), row);
+                    var cell = $"{GetColumnLetter(col)}{row}";
 
-                    var cellStyleAttribute = property.GetCustomAttribute<SpreadsheetCellStyleAttribute>(collectionType);
-                    if (cellStyleAttribute != null)
+                    var cellStyleAttribute = property.GetCustomAttribute<SpreadsheetCellStyleAttribute>();
+                    if (cellStyleAttribute is object)
                     {
                         cellStyleAttribute.ApplyCellStyles(worksheet.Cells[cell]);
                     }
 
-                    var value = property.GetValue(item) ?? string.Empty;
+                    _ = property.GetValue(item) ?? string.Empty;
                     worksheet.Cells[cell].Value = GetPropertyValue(property, item);
                 }
             }
 
             // set table formatting
-            using (var range = worksheet.Cells[string.Format("A1:{0}{1}", GetColumnLetter(col), data.Count() + 1)])
+            using (var range = worksheet.Cells[$"A1:{GetColumnLetter(col)}{data.Count() + 1}"])
             {
                 range.AutoFitColumns();
 
-                var table = worksheet.Tables.Add(range, "table_" + worksheetName);
+                var tableName = GetTableName(worksheetName);
+                var table = worksheet.Tables.Add(range, $"table_{tableName}");
                 table.TableStyle = GetTableStyle(collectionType);
             }
 
             return worksheet;
+        }
+
+        // Sanitize table name to only valid characters
+        // https://support.office.com/en-us/article/Rename-an-Excel-table-FBF49A4F-82A3-43EB-8BA2-44D21233B114
+        private static string GetTableName(string input)
+        {
+            var tableName = new char[input.Length];
+
+            for (var i = 0; i < input.Length; i++)
+            {
+                tableName[i] = char.IsLetterOrDigit(input[i])
+                    ? input[i]
+                    : '_';
+            }
+
+            return new string(tableName);
         }
 
         private static string GetWorksheetName(object firstRow, Type collectionType)
@@ -181,9 +198,9 @@ namespace EPPlusEnumerable
                 .GetProperties()
                 .FirstOrDefault(prop => Attribute.IsDefined(prop, typeof(SpreadsheetTabNameAttribute), true));
 
-            if (worksheetNameProperty != null)
+            if (worksheetNameProperty is object)
             {
-                var worksheetNameAttribute = worksheetNameProperty.GetCustomAttribute<SpreadsheetTabNameAttribute>(collectionType, true);
+                var worksheetNameAttribute = worksheetNameProperty.GetCustomAttribute<SpreadsheetTabNameAttribute>();
                 var worksheetPropertyValue = worksheetNameProperty.GetValue(firstRow);
 
                 if (!string.IsNullOrWhiteSpace(worksheetNameAttribute.FormatString))
@@ -197,15 +214,15 @@ namespace EPPlusEnumerable
             }
             else
             {
-                var displayNameAttribute = collectionType.GetCustomAttribute<DisplayNameAttribute>(collectionType, true);
-                if (displayNameAttribute != null)
+                var displayNameAttribute = collectionType.GetCustomAttribute<DisplayNameAttribute>();
+                if (displayNameAttribute is object)
                 {
                     worksheetName = displayNameAttribute.DisplayName;
                 }
                 else
                 {
-                    var displayAttribute = collectionType.GetCustomAttribute<DisplayAttribute>(collectionType, true);
-                    if (displayAttribute != null)
+                    var displayAttribute = collectionType.GetCustomAttribute<DisplayAttribute>();
+                    if (displayAttribute is object)
                     {
                         worksheetName = displayAttribute.Name;
                     }
@@ -219,8 +236,8 @@ namespace EPPlusEnumerable
         {
             var tableStyle = DefaultTableStyle;
 
-            var spreadsheetTableStyleAttribute = collectionType.GetCustomAttribute<SpreadsheetTableStyleAttribute>(collectionType, true);
-            if (spreadsheetTableStyleAttribute != null)
+            var spreadsheetTableStyleAttribute = collectionType.GetCustomAttribute<SpreadsheetTableStyleAttribute>();
+            if (spreadsheetTableStyleAttribute is object)
             {
                 tableStyle = spreadsheetTableStyleAttribute.TableStyle;
             }
@@ -232,15 +249,15 @@ namespace EPPlusEnumerable
         {
             var propertyName = property.Name;
 
-            var displayNameAttribute = property.GetCustomAttribute<DisplayNameAttribute>(collectionType, true);
-            if (displayNameAttribute != null)
+            var displayNameAttribute = property.GetCustomAttribute<DisplayNameAttribute>();
+            if (displayNameAttribute is object)
             {
                 propertyName = displayNameAttribute.DisplayName;
             }
             else
             {
-                var displayAttribute = property.GetCustomAttribute<DisplayAttribute>(collectionType, true);
-                if (displayAttribute != null)
+                var displayAttribute = property.GetCustomAttribute<DisplayAttribute>();
+                if (displayAttribute is object)
                 {
                     propertyName = displayAttribute.Name;
                 }
@@ -254,19 +271,19 @@ namespace EPPlusEnumerable
             var inputValue = property.GetValue(item);
             object outputValue = string.Empty;
 
-            var displayFormatAttribute = property.GetCustomAttribute<DisplayFormatAttribute>(item.GetType(), true);
-            if (displayFormatAttribute != null)
+            var displayFormatAttribute = property.GetCustomAttribute<DisplayFormatAttribute>();
+            if (displayFormatAttribute is object)
             {
-                if (inputValue == null && !string.IsNullOrWhiteSpace(displayFormatAttribute.NullDisplayText))
+                if (!(inputValue is object) && !string.IsNullOrWhiteSpace(displayFormatAttribute.NullDisplayText))
                 {
                     outputValue = displayFormatAttribute.NullDisplayText;
                 }
-                else if (inputValue != null)
+                else if (inputValue is object)
                 {
                     outputValue = string.Format(displayFormatAttribute.DataFormatString, inputValue);
                 }
             }
-            else if (inputValue != null)
+            else if (inputValue is object)
             {
                 if (property.PropertyType.IsValueType)
                 {
@@ -276,7 +293,7 @@ namespace EPPlusEnumerable
                 else
                 {
                     var enumerable = (inputValue as IEnumerable<object>);
-                    if (enumerable != null)
+                    if (enumerable is object)
                     {
                         // for collections, return a count
                         outputValue = enumerable.Count();
@@ -296,7 +313,7 @@ namespace EPPlusEnumerable
         {
             foreach (var collection in data)
             {
-                if (collection == null || !collection.Any())
+                if (!(collection is object) || !collection.Any())
                 {
                     continue;
                 }
@@ -307,7 +324,7 @@ namespace EPPlusEnumerable
                 var worksheetName = GetWorksheetName(firstRow, collectionType);
                 var worksheet = package.Workbook.Worksheets[worksheetName];
 
-                if (worksheet == null)
+                if (!(worksheet is object))
                 {
                     continue;
                 }
@@ -318,14 +335,14 @@ namespace EPPlusEnumerable
                 {
                     var property = properties.ElementAt(prop - 1);
 
-                    if (property.GetCustomAttribute<SpreadsheetExcludeAttribute>(collectionType) != null)
+                    if (property.GetCustomAttribute<SpreadsheetExcludeAttribute>() is object)
                     {
                         continue;
                     }
 
-                    var attribute = property.GetCustomAttribute<SpreadsheetLinkAttribute>(collectionType);
+                    var attribute = property.GetCustomAttribute<SpreadsheetLinkAttribute>();
 
-                    if (attribute == null)
+                    if (!(attribute is object))
                     {
                         // no SpreadsheetLinkAttribute for this property,
                         // so skip to the next property
@@ -335,7 +352,7 @@ namespace EPPlusEnumerable
                     // get the worksheet specified by the attribute
                     var linkSheet = package.Workbook.Worksheets[attribute.WorksheetName];
 
-                    if (linkSheet == null)
+                    if (!(linkSheet is object))
                     {
                         // if the target worksheet specified by the attribute doesn't exist,
                         // we can't add any links, so just skip to the next property
@@ -372,21 +389,21 @@ namespace EPPlusEnumerable
             // that had the SpreadsheetLinkAttribute and try to find a link target for each
             for (var worksheetRow = 1; worksheetRow <= worksheet.Dimension.Rows; worksheetRow++)
             {
-                var worksheetCell = worksheet.Cells[string.Format("{0}{1}", GetColumnLetter(worksheetColumnIndex), worksheetRow)];
+                var worksheetCell = worksheet.Cells[$"{GetColumnLetter(worksheetColumnIndex)}{worksheetRow}"];
                 var worksheetValue = worksheetCell.Value.ToString();
 
                 // loop through the cells of the target worksheet column and see if any of the values
                 // match the value of the current worksheet cell
                 for (var linksheetRow = 1; linksheetRow <= linkSheet.Dimension.Rows; linksheetRow++)
                 {
-                    var linksheetValue = linkSheet.Cells[string.Format("{0}{1}", linkColumn, linksheetRow)].Value.ToString();
+                    var linksheetValue = linkSheet.Cells[$"{linkColumn}{linksheetRow}"].Value.ToString();
 
                     if (worksheetValue.Equals(linksheetValue))
                     {
                         // we found a match! this is the link target,
                         // so add the hyperlink to the worksheet cell
                         // and stop searching for targets for this row
-                        worksheetCell.Hyperlink = new ExcelHyperLink(string.Format("'{0}'!{1}{2}", linkSheet.Name, linkColumn, linksheetRow), worksheetValue.ToString());
+                        worksheetCell.Hyperlink = new ExcelHyperLink($"'{linkSheet.Name}'!{linkColumn}{linksheetRow}", worksheetValue.ToString());
                         worksheetCell.Style.Font.UnderLine = true;
                         worksheetCell.Style.Font.Color.SetColor(Color.Blue);
                         break;

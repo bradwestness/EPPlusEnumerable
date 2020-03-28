@@ -36,7 +36,7 @@ namespace SampleConsoleApp
 
             foreach (var customer in _data.Value)
             {
-                if (customer.Orders.Any(x => x.OrderDate.HasValue && x.Order_Details.Any(y => y.Product != null)))
+                if (customer.Orders.Any(x => x.OrderDate.HasValue && x.Order_Details.Any(y => y.Product is object)))
                 {
                     users.Add(new User
                     {
@@ -47,7 +47,7 @@ namespace SampleConsoleApp
                         Zip = customer.PostalCode
                     });
 
-                    foreach (var order in customer.Orders.Where(x => x.OrderDate.HasValue && x.Order_Details.Any(y => y.Product != null)))
+                    foreach (var order in customer.Orders.Where(x => x.OrderDate.HasValue && x.Order_Details.Any(y => y.Product is object)))
                     {
                         orders.Add(new Order
                         {

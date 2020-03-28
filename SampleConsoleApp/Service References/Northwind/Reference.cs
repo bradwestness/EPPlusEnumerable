@@ -40,7 +40,7 @@ namespace SampleConsoleApp.Northwind
         protected global::System.Type ResolveTypeFromName(string typeName)
         {
             global::System.Type resolvedType = this.DefaultResolveType(typeName, "NorthwindModel", "SampleConsoleApp.Northwind");
-            if ((resolvedType != null))
+            if ((resolvedType is object))
             {
                 return resolvedType;
             }
@@ -1225,7 +1225,7 @@ namespace SampleConsoleApp.Northwind
         {
             get
             {
-                if ((this._Picture != null))
+                if ((this._Picture is object))
                 {
                     return ((byte[])(this._Picture.Clone()));
                 }
@@ -1269,7 +1269,7 @@ namespace SampleConsoleApp.Northwind
         [global::System.CodeDom.Compiler.GeneratedCodeAttribute("System.Data.Services.Design", "1.0.0")]
         protected virtual void OnPropertyChanged(string property)
         {
-            if ((this.PropertyChanged != null))
+            if ((this.PropertyChanged is object))
             {
                 this.PropertyChanged(this, new global::System.ComponentModel.PropertyChangedEventArgs(property));
             }
@@ -1363,7 +1363,7 @@ namespace SampleConsoleApp.Northwind
         [global::System.CodeDom.Compiler.GeneratedCodeAttribute("System.Data.Services.Design", "1.0.0")]
         protected virtual void OnPropertyChanged(string property)
         {
-            if ((this.PropertyChanged != null))
+            if ((this.PropertyChanged is object))
             {
                 this.PropertyChanged(this, new global::System.ComponentModel.PropertyChangedEventArgs(property));
             }
@@ -1675,7 +1675,7 @@ namespace SampleConsoleApp.Northwind
         [global::System.CodeDom.Compiler.GeneratedCodeAttribute("System.Data.Services.Design", "1.0.0")]
         protected virtual void OnPropertyChanged(string property)
         {
-            if ((this.PropertyChanged != null))
+            if ((this.PropertyChanged is object))
             {
                 this.PropertyChanged(this, new global::System.ComponentModel.PropertyChangedEventArgs(property));
             }
@@ -2022,7 +2022,7 @@ namespace SampleConsoleApp.Northwind
         {
             get
             {
-                if ((this._Photo != null))
+                if ((this._Photo is object))
                 {
                     return ((byte[])(this._Photo.Clone()));
                 }
@@ -2186,7 +2186,7 @@ namespace SampleConsoleApp.Northwind
         [global::System.CodeDom.Compiler.GeneratedCodeAttribute("System.Data.Services.Design", "1.0.0")]
         protected virtual void OnPropertyChanged(string property)
         {
-            if ((this.PropertyChanged != null))
+            if ((this.PropertyChanged is object))
             {
                 this.PropertyChanged(this, new global::System.ComponentModel.PropertyChangedEventArgs(property));
             }
@@ -2373,7 +2373,7 @@ namespace SampleConsoleApp.Northwind
         [global::System.CodeDom.Compiler.GeneratedCodeAttribute("System.Data.Services.Design", "1.0.0")]
         protected virtual void OnPropertyChanged(string property)
         {
-            if ((this.PropertyChanged != null))
+            if ((this.PropertyChanged is object))
             {
                 this.PropertyChanged(this, new global::System.ComponentModel.PropertyChangedEventArgs(property));
             }
@@ -2785,7 +2785,7 @@ namespace SampleConsoleApp.Northwind
         [global::System.CodeDom.Compiler.GeneratedCodeAttribute("System.Data.Services.Design", "1.0.0")]
         protected virtual void OnPropertyChanged(string property)
         {
-            if ((this.PropertyChanged != null))
+            if ((this.PropertyChanged is object))
             {
                 this.PropertyChanged(this, new global::System.ComponentModel.PropertyChangedEventArgs(property));
             }
@@ -3095,7 +3095,7 @@ namespace SampleConsoleApp.Northwind
         [global::System.CodeDom.Compiler.GeneratedCodeAttribute("System.Data.Services.Design", "1.0.0")]
         protected virtual void OnPropertyChanged(string property)
         {
-            if ((this.PropertyChanged != null))
+            if ((this.PropertyChanged is object))
             {
                 this.PropertyChanged(this, new global::System.ComponentModel.PropertyChangedEventArgs(property));
             }
@@ -3191,7 +3191,7 @@ namespace SampleConsoleApp.Northwind
         [global::System.CodeDom.Compiler.GeneratedCodeAttribute("System.Data.Services.Design", "1.0.0")]
         protected virtual void OnPropertyChanged(string property)
         {
-            if ((this.PropertyChanged != null))
+            if ((this.PropertyChanged is object))
             {
                 this.PropertyChanged(this, new global::System.ComponentModel.PropertyChangedEventArgs(property));
             }
@@ -3309,7 +3309,7 @@ namespace SampleConsoleApp.Northwind
         [global::System.CodeDom.Compiler.GeneratedCodeAttribute("System.Data.Services.Design", "1.0.0")]
         protected virtual void OnPropertyChanged(string property)
         {
-            if ((this.PropertyChanged != null))
+            if ((this.PropertyChanged is object))
             {
                 this.PropertyChanged(this, new global::System.ComponentModel.PropertyChangedEventArgs(property));
             }
@@ -3625,7 +3625,7 @@ namespace SampleConsoleApp.Northwind
         [global::System.CodeDom.Compiler.GeneratedCodeAttribute("System.Data.Services.Design", "1.0.0")]
         protected virtual void OnPropertyChanged(string property)
         {
-            if ((this.PropertyChanged != null))
+            if ((this.PropertyChanged is object))
             {
                 this.PropertyChanged(this, new global::System.ComponentModel.PropertyChangedEventArgs(property));
             }
@@ -3763,7 +3763,7 @@ namespace SampleConsoleApp.Northwind
         [global::System.CodeDom.Compiler.GeneratedCodeAttribute("System.Data.Services.Design", "1.0.0")]
         protected virtual void OnPropertyChanged(string property)
         {
-            if ((this.PropertyChanged != null))
+            if ((this.PropertyChanged is object))
             {
                 this.PropertyChanged(this, new global::System.ComponentModel.PropertyChangedEventArgs(property));
             }
@@ -4046,7 +4046,7 @@ namespace SampleConsoleApp.Northwind
         [global::System.CodeDom.Compiler.GeneratedCodeAttribute("System.Data.Services.Design", "1.0.0")]
         protected virtual void OnPropertyChanged(string property)
         {
-            if ((this.PropertyChanged != null))
+            if ((this.PropertyChanged is object))
             {
                 this.PropertyChanged(this, new global::System.ComponentModel.PropertyChangedEventArgs(property));
             }
@@ -4122,7 +4122,7 @@ namespace SampleConsoleApp.Northwind
         [global::System.CodeDom.Compiler.GeneratedCodeAttribute("System.Data.Services.Design", "1.0.0")]
         protected virtual void OnPropertyChanged(string property)
         {
-            if ((this.PropertyChanged != null))
+            if ((this.PropertyChanged is object))
             {
                 this.PropertyChanged(this, new global::System.ComponentModel.PropertyChangedEventArgs(property));
             }
@@ -4201,7 +4201,7 @@ namespace SampleConsoleApp.Northwind
         [global::System.CodeDom.Compiler.GeneratedCodeAttribute("System.Data.Services.Design", "1.0.0")]
         protected virtual void OnPropertyChanged(string property)
         {
-            if ((this.PropertyChanged != null))
+            if ((this.PropertyChanged is object))
             {
                 this.PropertyChanged(this, new global::System.ComponentModel.PropertyChangedEventArgs(property));
             }
@@ -4324,7 +4324,7 @@ namespace SampleConsoleApp.Northwind
         [global::System.CodeDom.Compiler.GeneratedCodeAttribute("System.Data.Services.Design", "1.0.0")]
         protected virtual void OnPropertyChanged(string property)
         {
-            if ((this.PropertyChanged != null))
+            if ((this.PropertyChanged is object))
             {
                 this.PropertyChanged(this, new global::System.ComponentModel.PropertyChangedEventArgs(property));
             }
@@ -4952,7 +4952,7 @@ namespace SampleConsoleApp.Northwind
         [global::System.CodeDom.Compiler.GeneratedCodeAttribute("System.Data.Services.Design", "1.0.0")]
         protected virtual void OnPropertyChanged(string property)
         {
-            if ((this.PropertyChanged != null))
+            if ((this.PropertyChanged is object))
             {
                 this.PropertyChanged(this, new global::System.ComponentModel.PropertyChangedEventArgs(property));
             }
@@ -5153,7 +5153,7 @@ namespace SampleConsoleApp.Northwind
         [global::System.CodeDom.Compiler.GeneratedCodeAttribute("System.Data.Services.Design", "1.0.0")]
         protected virtual void OnPropertyChanged(string property)
         {
-            if ((this.PropertyChanged != null))
+            if ((this.PropertyChanged is object))
             {
                 this.PropertyChanged(this, new global::System.ComponentModel.PropertyChangedEventArgs(property));
             }
@@ -5229,7 +5229,7 @@ namespace SampleConsoleApp.Northwind
         [global::System.CodeDom.Compiler.GeneratedCodeAttribute("System.Data.Services.Design", "1.0.0")]
         protected virtual void OnPropertyChanged(string property)
         {
-            if ((this.PropertyChanged != null))
+            if ((this.PropertyChanged is object))
             {
                 this.PropertyChanged(this, new global::System.ComponentModel.PropertyChangedEventArgs(property));
             }
@@ -5704,7 +5704,7 @@ namespace SampleConsoleApp.Northwind
         [global::System.CodeDom.Compiler.GeneratedCodeAttribute("System.Data.Services.Design", "1.0.0")]
         protected virtual void OnPropertyChanged(string property)
         {
-            if ((this.PropertyChanged != null))
+            if ((this.PropertyChanged is object))
             {
                 this.PropertyChanged(this, new global::System.ComponentModel.PropertyChangedEventArgs(property));
             }
@@ -5805,7 +5805,7 @@ namespace SampleConsoleApp.Northwind
         [global::System.CodeDom.Compiler.GeneratedCodeAttribute("System.Data.Services.Design", "1.0.0")]
         protected virtual void OnPropertyChanged(string property)
         {
-            if ((this.PropertyChanged != null))
+            if ((this.PropertyChanged is object))
             {
                 this.PropertyChanged(this, new global::System.ComponentModel.PropertyChangedEventArgs(property));
             }
@@ -5881,7 +5881,7 @@ namespace SampleConsoleApp.Northwind
         [global::System.CodeDom.Compiler.GeneratedCodeAttribute("System.Data.Services.Design", "1.0.0")]
         protected virtual void OnPropertyChanged(string property)
         {
-            if ((this.PropertyChanged != null))
+            if ((this.PropertyChanged is object))
             {
                 this.PropertyChanged(this, new global::System.ComponentModel.PropertyChangedEventArgs(property));
             }
@@ -6029,7 +6029,7 @@ namespace SampleConsoleApp.Northwind
         [global::System.CodeDom.Compiler.GeneratedCodeAttribute("System.Data.Services.Design", "1.0.0")]
         protected virtual void OnPropertyChanged(string property)
         {
-            if ((this.PropertyChanged != null))
+            if ((this.PropertyChanged is object))
             {
                 this.PropertyChanged(this, new global::System.ComponentModel.PropertyChangedEventArgs(property));
             }
@@ -6155,7 +6155,7 @@ namespace SampleConsoleApp.Northwind
         [global::System.CodeDom.Compiler.GeneratedCodeAttribute("System.Data.Services.Design", "1.0.0")]
         protected virtual void OnPropertyChanged(string property)
         {
-            if ((this.PropertyChanged != null))
+            if ((this.PropertyChanged is object))
             {
                 this.PropertyChanged(this, new global::System.ComponentModel.PropertyChangedEventArgs(property));
             }
@@ -6278,7 +6278,7 @@ namespace SampleConsoleApp.Northwind
         [global::System.CodeDom.Compiler.GeneratedCodeAttribute("System.Data.Services.Design", "1.0.0")]
         protected virtual void OnPropertyChanged(string property)
         {
-            if ((this.PropertyChanged != null))
+            if ((this.PropertyChanged is object))
             {
                 this.PropertyChanged(this, new global::System.ComponentModel.PropertyChangedEventArgs(property));
             }
@@ -6376,7 +6376,7 @@ namespace SampleConsoleApp.Northwind
         [global::System.CodeDom.Compiler.GeneratedCodeAttribute("System.Data.Services.Design", "1.0.0")]
         protected virtual void OnPropertyChanged(string property)
         {
-            if ((this.PropertyChanged != null))
+            if ((this.PropertyChanged is object))
             {
                 this.PropertyChanged(this, new global::System.ComponentModel.PropertyChangedEventArgs(property));
             }
@@ -6474,7 +6474,7 @@ namespace SampleConsoleApp.Northwind
         [global::System.CodeDom.Compiler.GeneratedCodeAttribute("System.Data.Services.Design", "1.0.0")]
         protected virtual void OnPropertyChanged(string property)
         {
-            if ((this.PropertyChanged != null))
+            if ((this.PropertyChanged is object))
             {
                 this.PropertyChanged(this, new global::System.ComponentModel.PropertyChangedEventArgs(property));
             }
